@@ -2,7 +2,6 @@ import os
 import sys
 import timeit
 import typing as tp
-from itertools import repeat
 
 import np_bench as npb
 from np_bench import first_true_1d
