@@ -21,11 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@master
-      - run: echo '::add-matcher::.github/problem-matchers/gcc.json'
-        if: matrix.os == 'macos-12' || matrix.os == 'ubuntu-22.04'
-      - run: echo '::add-matcher::.github/problem-matchers/msvc.json'
-        if: matrix.os == 'windows-2022'
-
       - uses: pypa/cibuildwheel@v2.12.3
         env:
           CIBW_ARCHS_MACOS: x86_64 universal2 arm64
