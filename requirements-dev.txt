@@ -1,0 +1,7 @@
+-r requirements-test.txt
+
+ipdb==0.13.13
+matplotlib==3.7.1
+static_frame==1.4.3
+
+
