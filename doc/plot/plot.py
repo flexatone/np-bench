@@ -69,7 +69,8 @@ def plot_performance(frame, *,
             # post = ax.bar(names_display, results, color=color)
 
             x_labels = [f'{i}: {cls.NAME}' for i, cls in
-                    zip(range(1, len(results) + 1), fixture['cls_processor'])
+                    zip(range(1, len(results) + 1),
+                    fixture['cls_processor'].values)
                     ]
             x_tick_labels = [str(l + 1) for l in range(len(x_labels))]
             x = np.arange(len(results))
@@ -78,9 +79,9 @@ def plot_performance(frame, *,
 
             density, position = fixture_label.split('-')
             # cat_label is the size of the array
-            title = f'{cat_label:.0e}\n{cls_fixture.DENSITY_TO_DISPLAY[density]}\n{cls_fixture.POSITION_TO_DISPLAY[position]}'
+            plot_title = f'{cat_label:.0e}\n{cls_fixture.DENSITY_TO_DISPLAY[density]}\n{cls_fixture.POSITION_TO_DISPLAY[position]}'
 
-            ax.set_title(title, fontsize=6)
+            ax.set_title(plot_title, fontsize=6)
             ax.set_box_aspect(0.75) # makes taller tan wide
 
             time_max = fixture["time"].max()
@@ -88,9 +89,9 @@ def plot_performance(frame, *,
             y_ticks = [0, time_min, time_max * 0.5, time_max]
             y_labels = [
                 "",
-                seconds_to_display(time_min),
-                seconds_to_display(time_max * 0.5),
-                seconds_to_display(time_max),
+                seconds_to_display(time_min, number),
+                seconds_to_display(time_max * 0.5, number),
+                seconds_to_display(time_max, number),
             ]
             if time_min > time_max * 0.25:
                 # remove the min if it is greater than quarter

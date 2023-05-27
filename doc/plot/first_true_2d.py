@@ -1,6 +1,7 @@
 import os
 import sys
 import typing as tp
+from pathlib import Path
 
 from np_bench import first_true_2d
 import np_bench as npb
@@ -175,10 +176,13 @@ class FixtureFactory(Fixture):
         step = int(length / count)
         fill = np.arange(start, len(a), step)
         a[fill] = True
+        # TODO: find a better way to do this
+        a = a.reshape(size // 10, 10)
         return a
 
     @classmethod
     def get_label_array(cls, size: int) -> tp.Tuple[str, np.ndarray]:
+        # import ipdb; ipdb.set_trace()
         array = cls.get_array(size)
         return cls.NAME, array
 
@@ -201,6 +205,7 @@ class FFSingleFirstThird(FixtureFactory):
     def get_array(size: int) -> np.ndarray:
         a = FixtureFactory.get_array(size)
         a[int(len(a) * (1/3))] = True
+        a = a.reshape(size // 10, 10)
         return a
 
 class FFSingleSecondThird(FixtureFactory):
@@ -210,6 +215,7 @@ class FFSingleSecondThird(FixtureFactory):
     def get_array(size: int) -> np.ndarray:
         a = FixtureFactory.get_array(size)
         a[int(len(a) * (2/3))] = True
+        a = a.reshape(size // 10, 10)
         return a
 
 
@@ -245,9 +251,9 @@ class FFThirdPostSecondThird(FixtureFactory):
         return cls._get_array_filled(size, start_third=2, density=1/3)
 
 
-def get_versions() -> str:
-    import platform
-    return f'OS: {platform.system()} / np_bench: {npb.__version__} / NumPy: {np.__version__}\n'
+# def get_versions() -> str:
+#     import platform
+#     return f'OS: {platform.system()} / np_bench: {npb.__version__} / NumPy: {np.__version__}\n'
 
 
 CLS_PROCESSOR = (
