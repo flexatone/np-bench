@@ -323,7 +323,7 @@ PyInit_np_bench(void)
     PyObject *m = PyModule_Create(&npb_module);
     if (
         !m
-        || PyModule_AddStringConstant(m, "__version__", Py_STRINGIFY(AM_VERSION))
+        || PyModule_AddStringConstant(m, "__version__", Py_STRINGIFY(NPB_VERSION))
     ) {
         Py_XDECREF(m);
         return NULL;

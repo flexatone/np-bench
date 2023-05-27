@@ -1,23 +1,15 @@
 import os
 import sys
-import timeit
 import typing as tp
 
 from np_bench import first_true_2d
 import np_bench as npb
-
-import matplotlib.pyplot as plt
 import numpy as np
-import static_frame as sf
 
 sys.path.append(os.getcwd())
 
-class ArrayProcessor:
-    NAME = ''
-    SORT = -1
-
-    def __init__(self, array: np.ndarray):
-        self.array = array
+from plot import ArrayProcessor
+from plot import Fixture
 
 #-------------------------------------------------------------------------------
 class AKFirstTrueAxis0Forward(ArrayProcessor):
@@ -77,94 +69,94 @@ class NPArgMaxAxis1(ArrayProcessor):
 
 
 #-------------------------------------------------------------------------------
-NUMBER = 2
+# NUMBER = 2
 
-def seconds_to_display(seconds: float) -> str:
-    seconds /= NUMBER
-    if seconds < 1e-4:
-        return f'{seconds * 1e6: .1f} (µs)'
-    if seconds < 1e-1:
-        return f'{seconds * 1e3: .1f} (ms)'
-    return f'{seconds: .1f} (s)'
+# def seconds_to_display(seconds: float) -> str:
+#     seconds /= NUMBER
+#     if seconds < 1e-4:
+#         return f'{seconds * 1e6: .1f} (µs)'
+#     if seconds < 1e-1:
+#         return f'{seconds * 1e3: .1f} (ms)'
+#     return f'{seconds: .1f} (s)'
 
 
-def plot_performance(frame):
-    fixture_total = len(frame['fixture'].unique())
-    cat_total = len(frame['size'].unique())
-    processor_total = len(frame['cls_processor'].unique())
-    fig, axes = plt.subplots(cat_total, fixture_total)
+# def plot_performance(frame):
+#     fixture_total = len(frame['fixture'].unique())
+#     cat_total = len(frame['size'].unique())
+#     processor_total = len(frame['cls_processor'].unique())
+#     fig, axes = plt.subplots(cat_total, fixture_total)
 
-    # cmap = plt.get_cmap('terrain')
-    cmap = plt.get_cmap('plasma')
+#     # cmap = plt.get_cmap('terrain')
+#     cmap = plt.get_cmap('plasma')
 
-    color = cmap(np.arange(processor_total) / processor_total)
+#     color = cmap(np.arange(processor_total) / processor_total)
 
-    # category is the size of the array
-    for cat_count, (cat_label, cat) in enumerate(frame.iter_group_items('size')):
-        for fixture_count, (fixture_label, fixture) in enumerate(
-                cat.iter_group_items('fixture')):
+#     # category is the size of the array
+#     for cat_count, (cat_label, cat) in enumerate(frame.iter_group_items('size')):
+#         for fixture_count, (fixture_label, fixture) in enumerate(
+#                 cat.iter_group_items('fixture')):
 
-            fixture = fixture.to_frame_go()
-            ax = axes[cat_count][fixture_count]
+#             fixture = fixture.to_frame_go()
+#             ax = axes[cat_count][fixture_count]
 
-            # set order
-            fixture['sort'] = [f.SORT for f in fixture['cls_processor'].values]
-            fixture = fixture.sort_values('sort')
+#             # set order
+#             fixture['sort'] = [f.SORT for f in fixture['cls_processor'].values]
+#             fixture = fixture.sort_values('sort')
 
-            results = fixture['time'].values.tolist()
-            names = [cls.NAME for cls in fixture['cls_processor'].values]
-            # x = np.arange(len(results))
-            names_display = names
-            post = ax.bar(names_display, results, color=color)
+#             results = fixture['time'].values.tolist()
+#             names = [cls.NAME for cls in fixture['cls_processor'].values]
+#             # x = np.arange(len(results))
+#             names_display = names
+#             post = ax.bar(names_display, results, color=color)
 
-            density, position = fixture_label.split('-')
-            # cat_label is the size of the array
-            title = f'{cat_label:.0e}\n{FixtureFactory.DENSITY_TO_DISPLAY[density]}\n{FixtureFactory.POSITION_TO_DISPLAY[position]}'
+#             density, position = fixture_label.split('-')
+#             # cat_label is the size of the array
+#             title = f'{cat_label:.0e}\n{FixtureFactory.DENSITY_TO_DISPLAY[density]}\n{FixtureFactory.POSITION_TO_DISPLAY[position]}'
 
-            ax.set_title(title, fontsize=6)
-            ax.set_box_aspect(0.75) # makes taller tan wide
-            time_max = fixture['time'].max()
-            ax.set_yticks([0, time_max * 0.5, time_max])
-            ax.set_yticklabels(['',
-                    seconds_to_display(time_max * .5),
-                    seconds_to_display(time_max),
-                    ], fontsize=6)
-            # ax.set_xticks(x, names_display, rotation='vertical')
-            ax.tick_params(
-                    axis='x',
-                    which='both',
-                    bottom=False,
-                    top=False,
-                    labelbottom=False,
-                    )
+#             ax.set_title(title, fontsize=6)
+#             ax.set_box_aspect(0.75) # makes taller tan wide
+#             time_max = fixture['time'].max()
+#             ax.set_yticks([0, time_max * 0.5, time_max])
+#             ax.set_yticklabels(['',
+#                     seconds_to_display(time_max * .5),
+#                     seconds_to_display(time_max),
+#                     ], fontsize=6)
+#             # ax.set_xticks(x, names_display, rotation='vertical')
+#             ax.tick_params(
+#                     axis='x',
+#                     which='both',
+#                     bottom=False,
+#                     top=False,
+#                     labelbottom=False,
+#                     )
 
-    fig.set_size_inches(9, 3.5) # width, height
-    fig.legend(post, names_display, loc='center right', fontsize=6)
-    # horizontal, vertical
-    fig.text(.05, .96, f'first_true_2d() Performance: {NUMBER} Iterations', fontsize=10)
-    fig.text(.05, .90, get_versions(), fontsize=6)
+#     fig.set_size_inches(9, 3.5) # width, height
+#     fig.legend(post, names_display, loc='center right', fontsize=6)
+#     # horizontal, vertical
+#     fig.text(.05, .96, f'first_true_2d() Performance: {NUMBER} Iterations', fontsize=10)
+#     fig.text(.05, .90, get_versions(), fontsize=6)
 
-    fp = '/tmp/first_true_2d.png'
-    plt.subplots_adjust(
-            left=0.075,
-            bottom=0.05,
-            right=0.75,
-            top=0.85,
-            wspace=1, # width
-            hspace=0.1,
-            )
-    # plt.rcParams.update({'font.size': 22})
-    plt.savefig(fp, dpi=300)
+#     fp = '/tmp/first_true_2d.png'
+#     plt.subplots_adjust(
+#             left=0.075,
+#             bottom=0.05,
+#             right=0.75,
+#             top=0.85,
+#             wspace=1, # width
+#             hspace=0.1,
+#             )
+#     # plt.rcParams.update({'font.size': 22})
+#     plt.savefig(fp, dpi=300)
 
-    if sys.platform.startswith('linux'):
-        os.system(f'eog {fp}&')
-    else:
-        os.system(f'open {fp}')
+#     if sys.platform.startswith('linux'):
+#         os.system(f'eog {fp}&')
+#     else:
+#         os.system(f'open {fp}')
 
 
 #-------------------------------------------------------------------------------
 
-class FixtureFactory:
+class FixtureFactory(Fixture):
     NAME = ''
 
     @staticmethod
@@ -278,40 +270,46 @@ CLS_FF = (
 )
 
 
-def run_test():
-    records = []
-    for size in (100_000, 1_000_000, 10_000_000):
-        for ff in CLS_FF:
-            fixture_label, fixture = ff.get_label_array(size)
-            # TEMP
-            fixture = fixture.reshape(size // 10, 10)
+# def run_test():
+#     records = []
+#     for size in (100_000, 1_000_000, 10_000_000):
+#         for ff in CLS_FF:
+#             fixture_label, fixture = ff.get_label_array(size)
+#             # TEMP
+#             fixture = fixture.reshape(size // 10, 10)
 
-            for cls in CLS_PROCESSOR:
-                runner = cls(fixture)
+#             for cls in CLS_PROCESSOR:
+#                 runner = cls(fixture)
 
-                record = [cls, NUMBER, fixture_label, size]
-                print(record)
-                try:
-                    result = timeit.timeit(
-                            f'runner()',
-                            globals=locals(),
-                            number=NUMBER)
-                except OSError:
-                    result = np.nan
-                finally:
-                    pass
-                record.append(result)
-                records.append(record)
+#                 record = [cls, NUMBER, fixture_label, size]
+#                 print(record)
+#                 try:
+#                     result = timeit.timeit(
+#                             f'runner()',
+#                             globals=locals(),
+#                             number=NUMBER)
+#                 except OSError:
+#                     result = np.nan
+#                 finally:
+#                     pass
+#                 record.append(result)
+#                 records.append(record)
 
-    f = sf.Frame.from_records(records,
-            columns=('cls_processor', 'number', 'fixture', 'size', 'time')
-            )
-    print(f)
-    plot_performance(f)
+#     f = sf.Frame.from_records(records,
+#             columns=('cls_processor', 'number', 'fixture', 'size', 'time')
+#             )
+#     print(f)
+#     plot_performance(f)
 
 if __name__ == '__main__':
-
-    run_test()
+    from plot import run_test
+    run_test(sizes=(100_000, 1_000_000, 10_000_000),
+            fixtures=CLS_FF,
+            processors=CLS_PROCESSOR,
+            fp=Path('/tmp/first_true_2d.png'),
+            title='first_true_2d()',
+            number=2,
+            )
 
 
 
