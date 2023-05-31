@@ -3,25 +3,28 @@ theme: default
 # background: https://source.unsplash.com/collection/94734566/1920x1080
 class: text-center
 highlighter: shiki
+lineNumbers: false
 transition: slide-left
-title: "Beating NumPy is Hard: When and how to Try"
+title: "Out-Performing NumPy is Hard: When and How to Try with Your Own C-Extensions "
 ---
 
-# Beating NumPy is Hard: When and How to Try
+# Out-Performing NumPy is Hard: When and How to Try with Your Own C-Extensions
 
 ### Christopher Ariza
 
 #### Research Affiliates
 
 ---
+theme: default
 ---
 # Sample Code Slide
 <Transform :scale="1.5">
 
 Code examples <uim-rocket />
 
-```python {all|1|2|all}
+```python {all|1|2|all} {lines:true}
 >>> for x in range(30):
+      x += 2
       print(x)
 ```
 </Transform>
