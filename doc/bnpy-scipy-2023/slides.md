@@ -10,10 +10,7 @@ transition: slide-left
 title: "Beating NumPy is Hard: When and how to Try"
 ---
 
----
-layout: cover
----
-# Beating NumPy is Hard: When and how to Try
+# Beating NumPy is Hard: When and How to Try
 
 Christopher Ariza
 
@@ -22,17 +19,24 @@ Research Affiliates
 ---
 ---
 # Sample Code Slide
+<Transform :scale="1.5">
 
 Code examples <uim-rocket />
-
-<Transform :scale="2">
 
 ```python {all|1|2|all} {maxHeight:'100px'}
 >>> for x in range(30):
       print(x)
 ```
-
 </Transform>
+
+
+<div class="absolute left-10px bottom-10px">
+Research Affiliates
+</div>
+
+<div class="absolute right-10px bottom-10px">
+Static Frame
+</div>
 
 ---
 ---
