@@ -5,6 +5,8 @@ class: text-center
 highlighter: shiki
 lineNumbers: false
 transition: slide-left
+aspectRatio: '16/9'
+favicon: /favicon.ico
 title: "Out-Performing NumPy is Hard: When and How to Try with Your Own C-Extensions "
 ---
 
@@ -52,7 +54,7 @@ Creator of StaticFrame, an alternative DataFrame library
 
 Code examples <uim-rocket />
 
-```python {all|1|2|all} {lines:true, startLine:5}
+```python {all|5|6|all} {lines:true, startLine:5}
 >>> for x in range(30):
       x += 2
       print(x)
@@ -91,10 +93,11 @@ layout: none
 # Performance Results
 
 <div class="absolute top-80px">
-<img src="/first_true_1d.png" class="center" />
+<img src="/first_true_1d.png" />
 </div>
 
 <style>
-h1 {font-size: 2em; margin-top: 10px; margin-left: 20px}
+h1 {font-size: 2em; margin-top: 10px; margin-left: 20px;}
+div {background-color: #666666;}
 </style>
 
