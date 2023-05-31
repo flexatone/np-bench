@@ -12,6 +12,7 @@
     "@slidev/theme-seriph": "latest"
   },
   "devDependencies": {
-    "@iconify-json/uim": "^1.1.5"
+    "@iconify-json/uim": "^1.1.5",
+    "playwright-chromium": "^1.34.3"
   }
 }

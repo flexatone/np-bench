@@ -2,19 +2,17 @@
 theme: default
 # background: https://source.unsplash.com/collection/94734566/1920x1080
 class: text-center
-highlighter: shiki
 lineNumbers: true
-drawings:
-  persist: false
+highlighter: shiki
 transition: slide-left
 title: "Beating NumPy is Hard: When and how to Try"
 ---
 
 # Beating NumPy is Hard: When and How to Try
 
-Christopher Ariza
+### Christopher Ariza
 
-Research Affiliates
+#### Research Affiliates
 
 ---
 ---
@@ -23,7 +21,7 @@ Research Affiliates
 
 Code examples <uim-rocket />
 
-```python {all|1|2|all} {maxHeight:'100px'}
+```python {all|1|2|all} {startLine:5}
 >>> for x in range(30):
       print(x)
 ```
@@ -43,7 +41,7 @@ Code examples <uim-rocket />
 
 - Item 1
 - Item 2
-    ```python
+    ```python {lines:false}
     >>> code
     ```
 - Item 3

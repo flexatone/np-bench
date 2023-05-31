@@ -3,8 +3,8 @@
     <footer
     v-if="$slidev.nav.currentLayout !== 'cover'"
     >
-        <div class="absolute left-10px bottom-10px">
-Research Affiliates
+        <div class="absolute left-10px bottom-0px">
+<img src="/ra-logo-500x500.svg" class="h-20" />
         </div>
 
 
@@ -17,5 +17,6 @@ Static Frame
         <SlideCurrentNo />
         </Transform>
         </div>
+
     </footer>
   </template>
