@@ -12,17 +12,47 @@ title: "Out-Performing NumPy is Hard: When and How to Try with Your Own C-Extens
 
 ### Christopher Ariza
 
-#### Research Affiliates
+#### CTO, Research Affiliates
+
+<style>
+h1 {font-size: 0.8em;}
+</style>
+
+
+
 
 ---
-theme: default
+---
+# About Me
+
+<Transform :scale="1.2">
+<v-clicks>
+
+CTO at Research Affiliates
+
+Python programmer since 2000
+
+PhD in music composition, professor of music technology
+
+Python for algorithmic composition, computational musicology
+
+Since 2012, builder of financial systems in Python
+
+Creator of StaticFrame, an alternative DataFrame library
+</v-clicks>
+</Transform>
+
+
+
+
+---
 ---
 # Sample Code Slide
 <Transform :scale="1.5">
 
 Code examples <uim-rocket />
 
-```python {all|1|2|all} {lines:true}
+```python {all|1|2|all} {lines:true, startLine:5}
 >>> for x in range(30):
       x += 2
       print(x)
@@ -49,6 +79,9 @@ Code examples <uim-rocket />
 </v-clicks>
 </Transform>
 
+<style>
+ul li {list-style-type: disc;}
+</style>
 
 
 
