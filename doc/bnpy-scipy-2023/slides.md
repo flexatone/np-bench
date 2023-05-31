@@ -30,23 +30,24 @@ Code examples <uim-rocket />
 </Transform>
 
 
-<div class="absolute left-10px bottom-10px">
-Research Affiliates
-</div>
 
-<div class="absolute right-10px bottom-10px">
-Static Frame
-</div>
+
 
 ---
 ---
 # Bullets
 
+
+<Transform :scale="1.5">
 <v-clicks>
 
 - Item 1
 - Item 2
+    ```python
+    >>> code
+    ```
 - Item 3
 - Item 4
-
 </v-clicks>
+</Transform>
+
