@@ -128,32 +128,71 @@ Given a 2D Boolean array, what are the indices of the first True per axis
 
 Need to be able to search in both directions
 
-Need to know if there are no Trues
+Need to know if there are no True
 </v-clicks>
 </Transform>
 
-<!-- can show stack overflow post -->
+
+
+---
+layout: none
+---
+# Stack Overflow 1
+
+<div class="absolute top-0px">
+<img src="/screen-so-1.png" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
+
+
+---
+layout: none
+---
+# Stack Overflow 2
+
+<div class="absolute top-0px">
+<img src="/screen-so-2.png" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
+
+
+---
+layout: none
+---
+# NumPy Issue 2269
+
+<div class="absolute top-0px">
+<img src="/screen-gh-npy-issue-2269.png" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
+
+
+
 
 ---
 ---
 # Finding the First True: NumPy Options
 
 <Transform :scale="1.5">
-<v-clicks>
 
-```python
-argmax
-```
+<pre>np.argmax()
+</pre>
 
-```python
-where
-```
+<pre>np.where()
+</pre>
 
-```python
-nonzero
-```
+<pre>np.nonzero()
+</pre>
 
-</v-clicks>
 </Transform>
 
 
