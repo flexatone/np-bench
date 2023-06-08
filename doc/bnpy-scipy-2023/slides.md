@@ -45,6 +45,122 @@ Creator of StaticFrame, an alternative DataFrame library
 </Transform>
 
 
+---
+---
+# Python Performance
+
+<Transform :scale="1.5">
+<v-clicks>
+
+Python (using C PyObjects) is relatively slow
+
+C-extensions offer opportunities for using C-types (at C performance)
+
+With NumPy, we get flexible usage of C-arrays in Python
+
+</v-clicks>
+</Transform>
+
+
+---
+---
+# My Journey
+
+<Transform :scale="1.5">
+<v-clicks>
+
+Built StaticFrame leveraging NumPy
+
+Performance studies identify opportunities
+
+For pure Python, can implement routines in C-types
+
+What about routines that are already using NumPy?
+</v-clicks>
+</Transform>
+
+
+---
+---
+# Can NumPy Routines be Optimized?
+
+<Transform :scale="1.5">
+<v-clicks>
+Some NumPy routines are implemented in Python
+
+Some NumPy routines might do more than we need
+
+</v-clicks>
+</Transform>
+
+
+---
+---
+# Can NumPy Routines be Optimized?
+
+<Transform :scale="1.5">
+<v-clicks>
+Many NumPy routines are flexible
+
+* Handle N-dimensional arrays
+
+* Handle full diversity of dtypes
+
+* Handle non-array (i.e., list, tuple) inputs
+
+* May make defensive copies
+
+More narrow routines might be able to out-perform flexible routines
+
+</v-clicks>
+</Transform>
+
+
+---
+---
+# Case Study: Finding the First True in an Array
+
+<Transform :scale="1.5">
+<v-clicks>
+Given a 1D Boolean array, what is the index of the first True
+
+Given a 2D Boolean array, what are the indices of the first True per axis
+
+Need to be able to search in both directions
+
+Need to know if there are no Trues
+</v-clicks>
+</Transform>
+
+<!-- can show stack overflow post -->
+
+---
+---
+# Finding the First True: NumPy Options
+
+<Transform :scale="1.5">
+<v-clicks>
+
+```python
+argmax
+```
+
+```python
+where
+```
+
+```python
+nonzero
+```
+
+</v-clicks>
+</Transform>
+
+
+
+
+
+
 
 
 ---
