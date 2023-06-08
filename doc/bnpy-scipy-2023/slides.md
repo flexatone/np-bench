@@ -14,10 +14,10 @@ title: "Out-Performing NumPy is Hard: When and How to Try with Your Own C-Extens
 
 ### Christopher Ariza
 
-#### CTO, Research Affiliates
+### CTO, Research Affiliates
 
 <style>
-h1 {font-size: 0.8em;}
+h1 {font-size: 1.5em;}
 </style>
 
 
@@ -27,7 +27,7 @@ h1 {font-size: 0.8em;}
 ---
 # About Me
 
-<Transform :scale="1.2">
+<Transform :scale="1.5">
 <v-clicks>
 
 CTO at Research Affiliates
