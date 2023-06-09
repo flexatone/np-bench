@@ -235,6 +235,23 @@ div {background-color: #666666;}
 
 
 
+
+
+---
+layout: none
+---
+# Performance Results
+
+<div class="absolute top-80px">
+<img src="/first_true_1d.png" />
+</div>
+
+<style>
+h1 {font-size: 2em; margin-top: 10px; margin-left: 20px;}
+div {background-color: #666666;}
+</style>
+
+
 ---
 ---
 # Bullets
@@ -256,20 +273,3 @@ div {background-color: #666666;}
 <style>
 ul li {list-style-type: disc;}
 </style>
-
-
-
----
-layout: none
----
-# Performance Results
-
-<div class="absolute top-80px">
-<img src="/first_true_1d.png" />
-</div>
-
-<style>
-h1 {font-size: 2em; margin-top: 10px; margin-left: 20px;}
-div {background-color: #666666;}
-</style>
-
