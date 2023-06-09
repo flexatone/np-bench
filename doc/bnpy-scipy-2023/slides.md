@@ -176,8 +176,6 @@ div {background-color: #666666;}
 </style>
 
 
-
-
 ---
 ---
 # Finding the First True: NumPy Options
@@ -187,34 +185,53 @@ div {background-color: #666666;}
 <pre>np.argmax()
 </pre>
 
-<pre>np.where()
-</pre>
-
 <pre>np.nonzero()
 </pre>
 
 </Transform>
 
 
-
-
-
-
-
-
 ---
 ---
-# Sample Code Slide
-<Transform :scale="1.5">
+# np.argmax() 1D
+<Transform :scale="1.6">
 
-Code examples <uim-rocket />
-
-```python {all|5|6|all} {lines:true, startLine:5}
->>> for x in range(30):
-      x += 2
-      print(x)
+```python {all|1|2-3|4|5-6|all} {lines:false}
+>>> array = np.arange(10_000) == 2_000
+>>> np.argmax(array)
+2000
+>>> array = np.full(10_000, False)
+>>> np.argmax(array)
+0
 ```
 </Transform>
+
+
+---
+---
+# np.nonzero() 1D
+<Transform :scale="1.6">
+
+
+```python {all|1|2-3|4-5|6|7-8|9-10|all} {lines:false}
+>>> array = np.arange(10_000) == 2_000
+>>> np.nonzero(array)
+(array([2000]),)
+>>> np.nonzero(array)[0][0]
+2000
+>>> array = np.arange(10_000) % 2_000 == 0
+>>> array.sum()
+5
+>>> np.nonzero(array)
+(array([   0, 2000, 4000, 6000, 8000]),)
+```
+</Transform>
+
+
+
+
+
+
 
 
 
