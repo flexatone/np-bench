@@ -1,13 +1,12 @@
 ---
 theme: default
-# background: https://source.unsplash.com/collection/94734566/1920x1080
 class: text-center
 highlighter: shiki
 lineNumbers: false
 transition: slide-left
-aspectRatio: '16/9'
+aspectRatio: 16/9
 favicon: /favicon.ico
-title: "Out-Performing NumPy is Hard: When and How to Try with Your Own C-Extensions "
+title: 'Out-Performing NumPy is Hard: When and How to Try with Your Own C-Extensions '
 ---
 
 # Out-Performing NumPy is Hard: When and How to Try with Your Own C-Extensions
@@ -19,8 +18,6 @@ title: "Out-Performing NumPy is Hard: When and How to Try with Your Own C-Extens
 <style>
 h1 {font-size: 1.5em;}
 </style>
-
-
 
 
 ---
@@ -86,6 +83,7 @@ What about routines that are already using NumPy?
 
 <Transform :scale="1.5">
 <v-clicks>
+
 Some NumPy routines are implemented in Python
 
 Some NumPy routines might do more than we need
@@ -100,6 +98,7 @@ Some NumPy routines might do more than we need
 
 <Transform :scale="1.5">
 <v-clicks>
+
 Many NumPy routines are flexible
 
 * Handle N-dimensional arrays
@@ -108,7 +107,6 @@ Many NumPy routines are flexible
 
 * Handle non-array (i.e., list, tuple) inputs
 
-* May make defensive copies
 
 More narrow routines might be able to out-perform flexible routines
 
@@ -122,13 +120,14 @@ More narrow routines might be able to out-perform flexible routines
 
 <Transform :scale="1.5">
 <v-clicks>
-Given a 1D Boolean array, what is the index of the first True
+
+Given a 1D Boolean array, what is the index of the first `True`
 
 Given a 2D Boolean array, what are the indices of the first True per axis
 
 Need to be able to search in both directions
 
-Need to know if there are no True
+Need to know if there are no `True`
 </v-clicks>
 </Transform>
 
@@ -182,36 +181,63 @@ div {background-color: #666666;}
 
 <Transform :scale="1.5">
 
-<pre>np.argmax()
-</pre>
+`np.argmax()`
 
-<pre>np.nonzero()
-</pre>
+`np.nonzero()`
+
 
 </Transform>
 
 
 ---
 ---
-# np.argmax() 1D
+# `np.argmax()` 1D
 <Transform :scale="1.6">
 
-```python {all|1|2-3|4|5-6|all} {lines:false}
+```python {all|1|2-3|4|5-6|all}
 >>> array = np.arange(10_000) == 2_000
->>> np.argmax(array)
+>>> np.argmax(array) # finds first True
 2000
 >>> array = np.full(10_000, False)
->>> np.argmax(array)
+>>> np.argmax(array) # if all False, reports 0
 0
 ```
 </Transform>
 
+<!--
+Cannot distguish all False from True at 0
+Finds first value; but cannot get first value from opposite direction
+-->
+
 
 ---
 ---
-# np.nonzero() 1D
+# `np.argmax()` 2D
 <Transform :scale="1.6">
 
+```python {all|1|2-6|7-8|9-10|all}
+>>> array = np.arange(24).reshape(4,6) % 5 == 0
+>>> array
+array([[ True, False, False, False, False,  True],
+       [False, False, False, False,  True, False],
+       [False, False, False,  True, False, False],
+       [False, False,  True, False, False, False]])
+>>> np.argmax(array, axis=0) # evaluate columns
+array([0, 0, 3, 2, 1, 0])
+>>> np.argmax(array, axis=1) # evaluate rows
+array([0, 4, 3, 2])
+
+```
+</Transform>
+
+<!--
+Notice that we get the same result for column 0 and column 1 as all False returns 0
+-->
+
+---
+---
+# `np.nonzero()` 1D
+<Transform :scale="1.6">
 
 ```python {all|1|2-3|4-5|6|7-8|9-10|all} {lines:false}
 >>> array = np.arange(10_000) == 2_000
@@ -228,7 +254,51 @@ div {background-color: #666666;}
 </Transform>
 
 
+---
+---
+# `np.nonzero()` 2D
+<Transform :scale="1.6">
 
+```python {all|1|2-6|7-8|9-10|all}
+>>> array = np.arange(24).reshape(4,6) % 5 == 0
+>>> array
+array([[ True, False, False, False, False,  True],
+       [False, False, False, False,  True, False],
+       [False, False, False,  True, False, False],
+       [False, False,  True, False, False, False]])
+>>> np.nonzero(array) # we get an array per dimension
+(array([0, 0, 1, 2, 3]), array([0, 5, 4, 3, 2]))
+>>> [array[x, y] for x, y in zip(*np.nonzero(array))]
+[True, True, True, True, True]
+```
+</Transform>
+
+<!--
+Notice that we have read through these coordinates to discuver the first true per axis
+-->
+
+
+
+---
+---
+# We Can Do Better... Right?
+
+<Transform :scale="1.5">
+<v-clicks>
+
+`np.argmax` suffers from not handling all-`False` case
+
+`np.nonzero` must do a full collection and cannot short circuit
+
+What if we right a C-extension to do just what we need
+
+Only handle 1D, 2D arrays
+
+Return -1 when all `False`
+
+
+</v-clicks>
+</Transform>
 
 
 
