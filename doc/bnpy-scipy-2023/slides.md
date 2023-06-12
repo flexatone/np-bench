@@ -113,6 +113,11 @@ More narrow routines might be able to out-perform flexible routines
 </v-clicks>
 </Transform>
 
+<style>
+ul li {list-style-type: disc;}
+</style>
+
+
 
 ---
 ---
@@ -278,7 +283,6 @@ Notice that we have read through these coordinates to discuver the first true pe
 -->
 
 
-
 ---
 ---
 # We Can Do Better... Right?
@@ -302,44 +306,126 @@ Return -1 when all `False`
 
 
 
-
-
-
-
-
----
-layout: none
----
-# Performance Results
-
-<div class="absolute top-80px">
-<img src="/first_true_1d.png" />
-</div>
-
-<style>
-h1 {font-size: 2em; margin-top: 10px; margin-left: 20px;}
-div {background-color: #666666;}
-</style>
-
-
 ---
 ---
-# Bullets
-
+# Many Options for Performance
 
 <Transform :scale="1.5">
-<v-clicks>
 
-- Item 1
-- Item 2
-    ```python
-    >>> code
-    ```
-- Item 3
-- Item 4
-</v-clicks>
+C-Extensions
+
+Cython
+
+Numba
+
+Rust via PyO3
+
 </Transform>
 
-<style>
-ul li {list-style-type: disc;}
-</style>
+<!--
+I will favor writing C-Extensions using the CPython C-API and NumPy C-API
+-->
+
+
+---
+---
+# Many Options for Performance
+
+<Transform :scale="1.5">
+
+C-Extensions
+
+Cython
+
+Numba
+
+Rust via PyO3
+
+</Transform>
+
+
+---
+---
+# Writing Python C-Extensions
+
+<Transform :scale="1.5">
+
+Custom types are hard
+
+Writing single functions is not that bad
+
+Python, NumPy C-APIs are reasonably well documented
+
+Must do cross-platform testing in CI (`cibuildwheel`)
+</Transform>
+
+
+
+---
+---
+# A Minimal C Extension
+
+```c
+// excluding define, include statements
+static struct PyModuleDef npb_module = {
+    .m_base = PyModuleDef_HEAD_INIT,
+    .m_name = "np_bench",
+    .m_size = -1,
+};
+
+PyObject *
+PyInit_np_bench(void)
+{
+    import_array();
+    PyObject *m = PyModule_Create(&npb_module);
+    if (!m || PyModule_AddStringConstant(m, "__version__", "0.1.0")
+    ) {
+        Py_XDECREF(m);
+        return NULL;
+    }
+    return m;
+}
+```
+
+
+
+---
+---
+# A Module-Level C Function
+
+```c
+static PyObject*
+first_true_1d(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    PyArrayObject *array = NULL;
+    int forward = 1;
+    if (!PyArg_ParseTuple(args,
+            "O!p:first_true_1d",
+            &PyArray_Type, &array,
+            &forward)) {
+        return NULL;
+    }
+    PyObject* post = PyLong_FromSsize_t(-1);
+    return post;
+}
+```
+
+---
+---
+# Adding a Function to a Module
+
+```c
+static PyMethodDef npb_methods[] =  {
+    {"first_true_1d", (PyCFunction)first_true_1d, METH_VARARGS, NULL},
+    {NULL},
+};
+static struct PyModuleDef npb_module = {
+    .m_base = PyModuleDef_HEAD_INIT,
+    .m_name = "np_bench",
+    .m_size = -1,
+    .m_methods = npb_methods,
+};
+```
+
+
+

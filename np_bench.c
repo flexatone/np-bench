@@ -21,27 +21,28 @@
 
 
 //------------------------------------------------------------------------------
-static char *first_true_1d_kwarg_names[] = {
-    "array",
-    "forward",
-    NULL
-};
-
 // NOTE: forward determines search priority, either from left or right; indices are always returned relative to the start of the axis.
 static PyObject*
-first_true_1d(PyObject *Py_UNUSED(m), PyObject *args, PyObject *kwargs)
+first_true_1d(PyObject *Py_UNUSED(m), PyObject *args)
 {
     PyArrayObject *array = NULL;
     int forward = 1;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-            "O!|$p:first_true_1d",
-            first_true_1d_kwarg_names,
+    if (!PyArg_ParseTuple(args,
+            "O!p:first_true_1d",
             &PyArray_Type, &array,
-            &forward
-            )) {
+            &forward)) {
         return NULL;
     }
+
+    // if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+    //         "O!|$p:first_true_1d",
+    //         first_true_1d_kwarg_names,
+    //         &PyArray_Type, &array,
+    //         &forward
+    //         )) {
+    //     return NULL;
+    // }
     if (PyArray_NDIM(array) != 1) {
         PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
         return NULL;
@@ -297,10 +298,7 @@ first_true_2d(PyObject *Py_UNUSED(m), PyObject *args, PyObject *kwargs)
 // module defintiion
 
 static PyMethodDef npb_methods[] =  {
-    {"first_true_1d",
-            (PyCFunction)first_true_1d,
-            METH_VARARGS | METH_KEYWORDS,
-            NULL},
+    {"first_true_1d", (PyCFunction)first_true_1d, METH_VARARGS, NULL},
     {"first_true_2d",
             (PyCFunction)first_true_2d,
             METH_VARARGS | METH_KEYWORDS,
@@ -311,7 +309,7 @@ static PyMethodDef npb_methods[] =  {
 static struct PyModuleDef npb_module = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_doc = "NumPy Performance Benchmarks",
-    .m_name = "arraymap",
+    .m_name = "np_bench",
     .m_size = -1,
     .m_methods = npb_methods,
 };
