@@ -1,4 +1,3 @@
-# include <math.h>
 # define PY_SSIZE_T_CLEAN
 # include "Python.h"
 
@@ -11,8 +10,7 @@
 
 static struct PyModuleDef npb_module = {
     .m_base = PyModuleDef_HEAD_INIT,
-    .m_doc = "NumPy Performance Benchmarks",
-    .m_name = "arraymap",
+    .m_name = "np_bench",
     .m_size = -1,
 };
 
@@ -21,9 +19,7 @@ PyInit_np_bench(void)
 {
     import_array();
     PyObject *m = PyModule_Create(&npb_module);
-    if (
-        !m
-        || PyModule_AddStringConstant(m, "__version__", Py_STRINGIFY(AM_VERSION))
+    if (!m || PyModule_AddStringConstant(m, "__version__", "0.1.0")
     ) {
         Py_XDECREF(m);
         return NULL;
