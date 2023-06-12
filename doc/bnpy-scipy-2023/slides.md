@@ -292,7 +292,7 @@ Notice that we have read through these coordinates to discuver the first true pe
 
 What if we right a C-extension to do just what we need
 
-Only handle 1D, 2D arrays
+Only handle 1D, 2D contiguous Boolean arrays
 
 Return -1 when all `False`
 
