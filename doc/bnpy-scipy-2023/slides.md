@@ -285,7 +285,7 @@ Notice that we have read through these coordinates to discuver the first true pe
 
 ---
 ---
-# We Can Do Better... Right?
+# Opportunities for Improvement
 
 <Transform :scale="1.25">
 <v-clicks>
@@ -303,6 +303,8 @@ Notice that we have read through these coordinates to discuver the first true pe
     - Cannot short-circuit
 
     - Always $\mathcal{O}(n)$ as cannot short-circuit
+
+- Both options are suboptimal
 
 </v-clicks>
 </Transform>
@@ -380,9 +382,12 @@ Must do cross-platform testing in CI (`cibuildwheel`)
 
 Take an array and a forward Boolean (where False is reverse)
 
-Return the index of the first True
+Evaluate elements, return the index of the first `True`
 
-If no True values, return -1
+If no `True`, return -1
+
+All Code: https://github.com/flexatone/np-bench
+
 </v-clicks>
 </Transform>
 
@@ -438,7 +443,7 @@ first_true_1d(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# Adding a Function to a Module
+# Adding a C Function to a Python Module
 
 ```c
 static PyMethodDef npb_methods[] =  {
@@ -457,7 +462,7 @@ static struct PyModuleDef npb_module = {
 
 ---
 ---
-# Many Ways to Read 1D Array Data
+# Five Ways to Read 1D Array Data
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -484,3 +489,334 @@ PyArray_DATA(array)
 </v-clicks>
 </Transform>
 
+
+
+---
+---
+# I: Reading Native `PyObject`s From Arrays
+
+<Transform :scale="1.5">
+<v-clicks>
+
+Only process 1D arrays
+
+Use `PyArray_GETPTR1()`, then `PyArray_GETITEM()`
+
+Convert array element to `PyObject`
+
+Use Python C-API `PyObject_IsTrue()` to evaluate elements
+
+Must manage reference counting for `PyObject`s
+</v-clicks>
+</Transform>
+
+
+---
+---
+# I: Reading Native `PyObject`s From Arrays
+
+```c
+static PyObject*
+first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    PyArrayObject *array = NULL;
+    int forward = 1;
+
+    if (!PyArg_ParseTuple(args,
+            "O!p:first_true_1d_getitem",
+            &PyArray_Type, &array,
+            &forward)) {
+        return NULL;
+    }
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    ...
+```
+
+
+---
+---
+# I: Reading Native `PyObject`s From Arrays
+
+```c
+    npy_intp size = PyArray_SIZE(array);
+    npy_intp i;
+    PyObject* element;
+
+    if (forward) {
+        for (i = 0; i < size; i++) {
+            element = PyArray_GETITEM(array, PyArray_GETPTR1(array, i));
+            if(PyObject_IsTrue(element)) {
+                Py_DECREF(element);
+                break;
+            }
+            Py_DECREF(element);
+        }
+    }
+```
+
+
+
+---
+---
+# I: Reading Native `PyObject`s From Arrays
+
+```c
+    else { // not forward
+        for (i = size - 1; i >= 0; i--) {
+            element = PyArray_GETITEM(array, PyArray_GETPTR1(array, i));
+            if(PyObject_IsTrue(element)) {
+                Py_DECREF(element);
+                break;
+            }
+            Py_DECREF(element);
+        }
+    }
+    if (i < 0 || i >= size ) { // else, return -1
+        i = -1;
+    }
+    return PyLong_FromSsize_t(i);
+}
+```
+
+
+
+---
+layout: none
+---
+# I: Reading Native `PyObject`s From Arrays
+
+<div class="absolute top-0px">
+<img src="" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
+
+
+
+---
+---
+# II: Reading Scalar `PyObject`s From Arrays
+
+<Transform :scale="1.5">
+<v-clicks>
+
+Only process 1D arrays
+
+Use `PyArray_GETPTR1()`, then `PyArray_ToScalar()`
+
+Array scalars are `PyObject`s
+
+Use Python C-API `PyObject_IsTrue()` to evaluate elements
+
+Must manage reference counting for `PyObject`s
+</v-clicks>
+</Transform>
+
+
+
+---
+layout: none
+---
+# II: Reading Scalar `PyObject`s From Arrays
+
+<div class="absolute top-0px">
+<img src="" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
+
+
+
+
+
+---
+---
+# III: Casting Data Pointers to C-Types
+
+<Transform :scale="1.5">
+<v-clicks>
+
+Only process 1D, Boolean arrays
+
+Use `PyArray_GETPTR1()` and cast to C type
+
+No use of Python C-API, no reference counting
+</v-clicks>
+</Transform>
+
+
+
+---
+layout: none
+---
+# III: Casting Data Pointers to C-Types
+
+<div class="absolute top-0px">
+<img src="" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
+
+
+
+
+---
+---
+# IV: Using `NpyIter`
+
+<Transform :scale="1.5">
+<v-clicks>
+
+Only process 1D, Boolean arrays
+
+Use `NpyIter_New()` to setup iteration
+
+Generality for N-dimensional arrays of diverse homogeniety
+</v-clicks>
+</Transform>
+
+
+
+---
+layout: none
+---
+# IV: Using `NpyIter`
+
+<div class="absolute top-0px">
+<img src="" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
+
+
+
+
+---
+---
+# V(a): Using C-Array and Pointer Arithmetic
+
+<Transform :scale="1.5">
+<v-clicks>
+
+Only process 1D, Boolean, contiguous arrays
+
+Use `PyArray_DATA()` to get C-array
+
+Advance through array with pointer arithmetic
+</v-clicks>
+</Transform>
+
+
+
+
+---
+layout: none
+---
+# V(a): Using C-Array and Pointer Arithmetic
+
+<div class="absolute top-0px">
+<img src="" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
+
+
+
+
+
+---
+---
+# V(b): Using C-Array, Pointer Arithmetic, Loop Unrolling
+
+<Transform :scale="1.5">
+<v-clicks>
+
+Space-time tradeoff
+
+Only process 1D, Boolean, contiguous arrays
+
+Use `PyArray_DATA()` to get C-array
+
+Advance through array with pointer arithmetic, unrolling units of 4
+</v-clicks>
+</Transform>
+
+
+
+---
+layout: none
+---
+# V(b): Using C-Array, Pointer Arithmetic, Loop Unrolling
+
+<div class="absolute top-0px">
+<img src="" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
+
+
+
+
+
+---
+---
+# VI: 2D Forced Contiguous C-Order-Array, Pointer Arithmetic, Loop Unrolling
+
+<Transform :scale="1.5">
+<v-clicks>
+Only process 1D, Boolean, contiguous arrays
+
+Use `PyArray_DATA()` to get C-array
+
+Advance through array with pointer arithmetic, unrolling units of 4
+</v-clicks>
+</Transform>
+
+
+
+---
+layout: none
+---
+# VI: 2D Forced Contiguous C-Order-Array, Pointer Arithmetic, Loop Unrolling
+
+<div class="absolute top-0px">
+<img src="" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
+
+
+
+
+---
+layout: quote
+---
+# Thanks!
+
+<Transform :scale="1.5">
+Thanks to Brandt Bucher & Charles Burkland
+
+Sli.dev slides
+
+Code: https://github.com/flexatone/np-bench
+
+StaticFrame: https://static-frame.dev
+
+</Transform>

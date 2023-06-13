@@ -35,7 +35,6 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
             &forward)) {
         return NULL;
     }
-
     if (PyArray_NDIM(array) != 1) {
         PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
         return NULL;
