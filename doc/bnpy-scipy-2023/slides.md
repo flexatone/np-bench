@@ -287,21 +287,31 @@ Notice that we have read through these coordinates to discuver the first true pe
 ---
 # We Can Do Better... Right?
 
-<Transform :scale="1.5">
+<Transform :scale="1.25">
 <v-clicks>
 
-`np.argmax` suffers from not handling all-`False` case
+- `np.argmax`:
 
-`np.nonzero` must do a full collection and cannot short circuit
+    - Does not handle all-`False` case
 
-What if we write a C-extension to do just what we need
+    - Could add an `np.any()` call to find all-`False`
 
-Only handle 1D, 2D contiguous Boolean arrays
+    - $\mathcal{O}(2n)$ worst case, but can short-circuit
 
-Return -1 when all `False`
+- `np.nonzero`
+
+    - Cannot short-circuit
+
+    - Always $\mathcal{O}(n)$ as cannot short-circuit
+
 </v-clicks>
 </Transform>
 
+<!-- What if we write a C-extension to do just what we need
+
+Only handle 1D, 2D contiguous Boolean arrays
+
+Return -1 when all `False` -->
 
 
 ---
@@ -363,6 +373,22 @@ Must do cross-platform testing in CI (`cibuildwheel`)
 
 ---
 ---
+# ``first_true_1d()`` in C
+
+<Transform :scale="1.5">
+<v-clicks>
+
+Take an array and a forward Boolean (where False is reverse)
+
+Return the index of the first True
+
+If no True values, return -1
+</v-clicks>
+</Transform>
+
+
+---
+---
 # A Minimal C Extension
 
 ```c
@@ -391,7 +417,7 @@ PyInit_np_bench(void)
 
 ---
 ---
-# A C Function as Module-Level Python Function
+# A C Function as a Module-Level Python Function
 
 ```c
 static PyObject*
@@ -405,7 +431,7 @@ first_true_1d(PyObject *Py_UNUSED(m), PyObject *args)
             &forward)) {
         return NULL;
     }
-    PyObject* post = PyLong_FromSsize_t(-1);
+    PyObject* post = PyLong_FromSsize_t(-1); // temporarily always return -1
     return post;
 }
 ```
@@ -427,18 +453,34 @@ static struct PyModuleDef npb_module = {
 };
 ```
 
+
+
 ---
 ---
-# Many Ways to Read Array Data
+# Many Ways to Read 1D Array Data
 
 <Transform :scale="1.5">
 <v-clicks>
 
-Use `PyArray_GETPTR1()`
+```c
+PyArray_GETITEM(array, PyArray_GETPTR1(array, i))
+```
 
-Use `NpyIter`
+```c
+PyArray_ToScalar(PyArray_GETPTR1(array, i), array)
+```
 
-Use `PyArray_DATA` and pointer arithmatic
+```c
+PyArray_GETPTR1(array, i)
+```
+
+```c
+NpyIter_New()
+```
+
+```c
+PyArray_DATA(array)
+```
 </v-clicks>
 </Transform>
 

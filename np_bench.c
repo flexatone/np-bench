@@ -33,7 +33,7 @@ first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
     int forward = 1;
 
     if (!PyArg_ParseTuple(args,
-            "O!p:first_true_1d_unroll",
+            "O!p:first_true_1d_ptr_unroll",
             &PyArray_Type, &array,
             &forward)) {
         return NULL;
@@ -80,7 +80,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
     int forward = 1;
 
     if (!PyArg_ParseTuple(args,
-            "O!p:first_true_1d_unroll",
+            "O!p:first_true_1d_ptr_unroll",
             &PyArray_Type, &array,
             &forward)) {
         return NULL;
@@ -153,7 +153,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
     int forward = 1;
 
     if (!PyArg_ParseTuple(args,
-            "O!p:first_true_1d_unroll",
+            "O!p:first_true_1d_ptr_unroll",
             &PyArray_Type, &array,
             &forward)) {
         return NULL;
@@ -205,13 +205,13 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
 
 
 static PyObject*
-first_true_1d_unroll(PyObject *Py_UNUSED(m), PyObject *args)
+first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 {
     PyArrayObject *array = NULL;
     int forward = 1;
 
     if (!PyArg_ParseTuple(args,
-            "O!p:first_true_1d_unroll",
+            "O!p:first_true_1d_ptr_unroll",
             &PyArray_Type, &array,
             &forward)) {
         return NULL;
@@ -474,7 +474,7 @@ static PyMethodDef npb_methods[] =  {
     {"first_true_1d_npyiter", (PyCFunction)first_true_1d_npyiter, METH_VARARGS, NULL},
     {"first_true_1d_getptr", (PyCFunction)first_true_1d_getptr, METH_VARARGS, NULL},
     {"first_true_1d_ptr", (PyCFunction)first_true_1d_ptr, METH_VARARGS, NULL},
-    {"first_true_1d_unroll", (PyCFunction)first_true_1d_unroll, METH_VARARGS, NULL},
+    {"first_true_1d_ptr_unroll", (PyCFunction)first_true_1d_ptr_unroll, METH_VARARGS, NULL},
     {"first_true_2d",
             (PyCFunction)first_true_2d,
             METH_VARARGS | METH_KEYWORDS,
