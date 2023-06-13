@@ -23,6 +23,104 @@
 //------------------------------------------------------------------------------
 // NOTE: forward determines search priority, either from left or right; indices are always returned relative to the start of the axis.
 
+static PyObject*
+first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    PyArrayObject *array = NULL;
+    int forward = 1;
+
+    if (!PyArg_ParseTuple(args,
+            "O!p:first_true_1d_getitem",
+            &PyArray_Type, &array,
+            &forward)) {
+        return NULL;
+    }
+
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+
+    npy_intp size = PyArray_SIZE(array);
+    npy_intp i;
+    PyObject* element;
+
+    if (forward) {
+        for (i = 0; i < size; i++) {
+            element = PyArray_GETITEM(array, PyArray_GETPTR1(array, i));
+            if(PyObject_IsTrue(element)) {
+                Py_DECREF(element);
+                break;
+            }
+            Py_DECREF(element);
+        }
+    }
+    else {
+        for (i = size - 1; i >= 0; i--) {
+            element = PyArray_GETITEM(array, PyArray_GETPTR1(array, i));
+            if(PyObject_IsTrue(element)) {
+                Py_DECREF(element);
+                break;
+            }
+            Py_DECREF(element);
+        }
+    }
+    if (i < 0 || i >= size ) { // else, return -1
+        i = -1;
+    }
+    return PyLong_FromSsize_t(i);
+}
+
+
+static PyObject*
+first_true_1d_scalar(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    PyArrayObject *array = NULL;
+    int forward = 1;
+
+    if (!PyArg_ParseTuple(args,
+            "O!p:first_true_1d_getitem",
+            &PyArray_Type, &array,
+            &forward)) {
+        return NULL;
+    }
+
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+
+    npy_intp size = PyArray_SIZE(array);
+    npy_intp i;
+    PyObject* scalar;
+
+    if (forward) {
+        for (i = 0; i < size; i++) {
+            scalar = PyArray_ToScalar(PyArray_GETPTR1(array, i), array);
+            if(PyObject_IsTrue(scalar)) {
+                Py_DECREF(scalar);
+                break;
+            }
+            Py_DECREF(scalar);
+        }
+    }
+    else {
+        for (i = size - 1; i >= 0; i--) {
+            scalar = PyArray_ToScalar(PyArray_GETPTR1(array, i), array);
+            if(PyObject_IsTrue(scalar)) {
+                Py_DECREF(scalar);
+                break;
+            }
+            Py_DECREF(scalar);
+        }
+    }
+    if (i < 0 || i >= size ) { // else, return -1
+        i = -1;
+    }
+    return PyLong_FromSsize_t(i);
+}
+
+
 
 
 
@@ -33,7 +131,7 @@ first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
     int forward = 1;
 
     if (!PyArg_ParseTuple(args,
-            "O!p:first_true_1d_ptr_unroll",
+            "O!p:first_true_1d_getptr",
             &PyArray_Type, &array,
             &forward)) {
         return NULL;
@@ -80,7 +178,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
     int forward = 1;
 
     if (!PyArg_ParseTuple(args,
-            "O!p:first_true_1d_ptr_unroll",
+            "O!p:first_true_1d_npyiter",
             &PyArray_Type, &array,
             &forward)) {
         return NULL;
@@ -153,7 +251,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
     int forward = 1;
 
     if (!PyArg_ParseTuple(args,
-            "O!p:first_true_1d_ptr_unroll",
+            "O!p:first_true_1d_ptr",
             &PyArray_Type, &array,
             &forward)) {
         return NULL;
@@ -471,6 +569,8 @@ first_true_2d(PyObject *Py_UNUSED(m), PyObject *args, PyObject *kwargs)
 // module defintiion
 
 static PyMethodDef npb_methods[] =  {
+    {"first_true_1d_getitem", (PyCFunction)first_true_1d_getitem, METH_VARARGS, NULL},
+    {"first_true_1d_scalar", (PyCFunction)first_true_1d_scalar, METH_VARARGS, NULL},
     {"first_true_1d_npyiter", (PyCFunction)first_true_1d_npyiter, METH_VARARGS, NULL},
     {"first_true_1d_getptr", (PyCFunction)first_true_1d_getptr, METH_VARARGS, NULL},
     {"first_true_1d_ptr", (PyCFunction)first_true_1d_ptr, METH_VARARGS, NULL},

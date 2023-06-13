@@ -6,6 +6,8 @@ def test_version():
 
 def test_first_true_1d_a():
     for func in (
+            npb.first_true_1d_getitem,
+            npb.first_true_1d_scalar,
             npb.first_true_1d_npyiter,
             npb.first_true_1d_getptr,
             npb.first_true_1d_ptr,
@@ -21,6 +23,8 @@ def test_first_true_1d_a():
 
 def test_first_true_1d_b():
     for func in (
+            npb.first_true_1d_getitem,
+            npb.first_true_1d_scalar,
             # npb.first_true_1d_npyiter, # cannot do reverse
             npb.first_true_1d_getptr,
             npb.first_true_1d_ptr,
