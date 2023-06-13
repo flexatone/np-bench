@@ -22,27 +22,207 @@
 
 //------------------------------------------------------------------------------
 // NOTE: forward determines search priority, either from left or right; indices are always returned relative to the start of the axis.
+
+
+
+
 static PyObject*
-first_true_1d(PyObject *Py_UNUSED(m), PyObject *args)
+first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
 {
     PyArrayObject *array = NULL;
     int forward = 1;
 
     if (!PyArg_ParseTuple(args,
-            "O!p:first_true_1d",
+            "O!p:first_true_1d_unroll",
             &PyArray_Type, &array,
             &forward)) {
         return NULL;
     }
 
-    // if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-    //         "O!|$p:first_true_1d",
-    //         first_true_1d_kwarg_names,
-    //         &PyArray_Type, &array,
-    //         &forward
-    //         )) {
-    //     return NULL;
-    // }
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+
+    npy_intp size = PyArray_SIZE(array);
+    npy_intp i;
+
+    if (forward) {
+        for (i = 0; i < size; i++) {
+            if(*(npy_bool*)PyArray_GETPTR1(array, i)) {
+                break;
+            }
+        }
+    }
+    else {
+        for (i = size - 1; i >= 0; i--) {
+            if(*(npy_bool*)PyArray_GETPTR1(array, i)) {
+                break;
+            }
+        }
+    }
+    if (i < 0 || i >= size ) { // else, return -1
+        i = -1;
+    }
+
+    PyObject* post = PyLong_FromSsize_t(i);
+    return post;
+}
+
+
+static PyObject*
+first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    PyArrayObject *array = NULL;
+    int forward = 1;
+
+    if (!PyArg_ParseTuple(args,
+            "O!p:first_true_1d_unroll",
+            &PyArray_Type, &array,
+            &forward)) {
+        return NULL;
+    }
+
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+
+    NpyIter *iter = NpyIter_New(
+            array,                                      // array
+            NPY_ITER_READONLY | NPY_ITER_EXTERNAL_LOOP, // iter flags
+            NPY_KEEPORDER,                              // order
+            NPY_NO_CASTING,                             // casting
+            NULL                                        // dtype
+            );
+    if (iter == NULL) {
+        return NULL;
+    }
+
+    NpyIter_IterNextFunc *iter_next = NpyIter_GetIterNext(iter, NULL);
+    if (iter_next == NULL) {
+        NpyIter_Deallocate(iter);
+        return NULL;
+    }
+
+    npy_bool **data_ptr_array = (npy_bool**)NpyIter_GetDataPtrArray(iter);
+    npy_bool *data_ptr;
+
+    npy_intp *stride_ptr = NpyIter_GetInnerStrideArray(iter);
+    npy_intp stride;
+
+    npy_intp *inner_size_ptr = NpyIter_GetInnerLoopSizePtr(iter);
+    npy_intp inner_size;
+
+    npy_intp i = 0;
+
+    do {
+        data_ptr = *data_ptr_array;
+        stride = *stride_ptr;
+        inner_size = *inner_size_ptr;
+
+        while (inner_size--) {
+            if (*data_ptr) {
+                goto end;
+            }
+            i++;
+            data_ptr += stride;
+        }
+
+    // Increment the iterator to the next inner loop
+    } while(iter_next(iter));
+
+    // no true found
+    return PyLong_FromSsize_t(-1);
+end:
+    return PyLong_FromSsize_t(i);
+}
+
+
+static PyObject*
+first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    PyArrayObject *array = NULL;
+    int forward = 1;
+
+    if (!PyArg_ParseTuple(args,
+            "O!p:first_true_1d_unroll",
+            &PyArray_Type, &array,
+            &forward)) {
+        return NULL;
+    }
+
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+    if (!PyArray_IS_C_CONTIGUOUS(array)) {
+        PyErr_SetString(PyExc_ValueError, "Array must be contiguous");
+        return NULL;
+    }
+
+    npy_intp size = PyArray_SIZE(array);
+    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
+
+    NPY_BEGIN_THREADS_DEF;
+    NPY_BEGIN_THREADS;
+
+    Py_ssize_t position = -1;
+    npy_bool *p;
+    npy_bool *p_end;
+
+    if (forward) {
+        p = array_buffer;
+        p_end = p + size;
+        while (p < p_end) {
+            if (*p) break;
+            p++;
+        }
+    }
+    else {
+        p = array_buffer + size - 1;
+        p_end = array_buffer - 1;
+        while (p > p_end) {
+            if (*p) break;
+            p--;
+        }
+    }
+    if (p != p_end) { // else, return -1
+        position = p - array_buffer;
+    }
+    NPY_END_THREADS;
+
+    PyObject* post = PyLong_FromSsize_t(position);
+    return post;
+}
+
+
+
+static PyObject*
+first_true_1d_unroll(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    PyArrayObject *array = NULL;
+    int forward = 1;
+
+    if (!PyArg_ParseTuple(args,
+            "O!p:first_true_1d_unroll",
+            &PyArray_Type, &array,
+            &forward)) {
+        return NULL;
+    }
+
     if (PyArray_NDIM(array) != 1) {
         PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
         return NULL;
@@ -298,7 +478,10 @@ first_true_2d(PyObject *Py_UNUSED(m), PyObject *args, PyObject *kwargs)
 // module defintiion
 
 static PyMethodDef npb_methods[] =  {
-    {"first_true_1d", (PyCFunction)first_true_1d, METH_VARARGS, NULL},
+    {"first_true_1d_npyiter", (PyCFunction)first_true_1d_npyiter, METH_VARARGS, NULL},
+    {"first_true_1d_getptr", (PyCFunction)first_true_1d_getptr, METH_VARARGS, NULL},
+    {"first_true_1d_ptr", (PyCFunction)first_true_1d_ptr, METH_VARARGS, NULL},
+    {"first_true_1d_unroll", (PyCFunction)first_true_1d_unroll, METH_VARARGS, NULL},
     {"first_true_2d",
             (PyCFunction)first_true_2d,
             METH_VARARGS | METH_KEYWORDS,
