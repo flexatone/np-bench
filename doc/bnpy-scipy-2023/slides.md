@@ -294,13 +294,11 @@ Notice that we have read through these coordinates to discuver the first true pe
 
 `np.nonzero` must do a full collection and cannot short circuit
 
-What if we right a C-extension to do just what we need
+What if we write a C-extension to do just what we need
 
 Only handle 1D, 2D contiguous Boolean arrays
 
 Return -1 when all `False`
-
-
 </v-clicks>
 </Transform>
 
@@ -311,6 +309,7 @@ Return -1 when all `False`
 # Many Options for Performance
 
 <Transform :scale="1.5">
+<v-clicks>
 
 C-Extensions
 
@@ -319,7 +318,7 @@ Cython
 Numba
 
 Rust via PyO3
-
+</v-clicks>
 </Transform>
 
 <!--
@@ -329,18 +328,17 @@ I will favor writing C-Extensions using the CPython C-API and NumPy C-API
 
 ---
 ---
-# Many Options for Performance
+# Good Candidates for C-Implementation
 
 <Transform :scale="1.5">
+<v-clicks>
 
-C-Extensions
+A path for doing what needs to be done without PyObjects
 
-Cython
+Can use an input array (or arrays) as a C array.
 
-Numba
-
-Rust via PyO3
-
+Can build a C array (and return PyObject array)
+</v-clicks>
 </Transform>
 
 
@@ -349,6 +347,7 @@ Rust via PyO3
 # Writing Python C-Extensions
 
 <Transform :scale="1.5">
+<v-clicks>
 
 Custom types are hard
 
@@ -357,6 +356,7 @@ Writing single functions is not that bad
 Python, NumPy C-APIs are reasonably well documented
 
 Must do cross-platform testing in CI (`cibuildwheel`)
+</v-clicks>
 </Transform>
 
 
@@ -391,7 +391,7 @@ PyInit_np_bench(void)
 
 ---
 ---
-# A Module-Level C Function
+# A C Function as Module-Level Python Function
 
 ```c
 static PyObject*
@@ -427,5 +427,18 @@ static struct PyModuleDef npb_module = {
 };
 ```
 
+---
+---
+# Many Ways to Read Array Data
 
+<Transform :scale="1.5">
+<v-clicks>
+
+Use `PyArray_GETPTR1()`
+
+Use `NpyIter`
+
+Use `PyArray_DATA` and pointer arithmatic
+</v-clicks>
+</Transform>
 

@@ -69,8 +69,7 @@ first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
         i = -1;
     }
 
-    PyObject* post = PyLong_FromSsize_t(i);
-    return post;
+    return PyLong_FromSsize_t(i);
 }
 
 
@@ -176,9 +175,6 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
     npy_intp size = PyArray_SIZE(array);
     npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
-    NPY_BEGIN_THREADS_DEF;
-    NPY_BEGIN_THREADS;
-
     Py_ssize_t position = -1;
     npy_bool *p;
     npy_bool *p_end;
@@ -202,10 +198,8 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
     if (p != p_end) { // else, return -1
         position = p - array_buffer;
     }
-    NPY_END_THREADS;
 
-    PyObject* post = PyLong_FromSsize_t(position);
-    return post;
+    return PyLong_FromSsize_t(position);
 }
 
 
@@ -290,8 +284,7 @@ first_true_1d_unroll(PyObject *Py_UNUSED(m), PyObject *args)
     }
     NPY_END_THREADS;
 
-    PyObject* post = PyLong_FromSsize_t(position);
-    return post;
+    return PyLong_FromSsize_t(position);
 }
 
 
