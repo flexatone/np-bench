@@ -14,28 +14,28 @@ from plot import Fixture
 
 #-------------------------------------------------------------------------------
 class AKFirstTrueAxis0Forward(ArrayProcessor):
-    NAME = 'ak.first_true_2d(forward=True, axis=0)'
+    NAME = 'ak.first_true_2d, axis=0'
     SORT = 0
 
     def __call__(self):
         _ = first_true_2d(self.array, forward=True, axis=0)
 
 class AKFirstTrueAxis1Forward(ArrayProcessor):
-    NAME = 'ak.first_true_2d(forward=True, axis=1)'
+    NAME = 'ak.first_true_2d, axis=1'
     SORT = 0
 
     def __call__(self):
         _ = first_true_2d(self.array, forward=True, axis=1)
 
 class AKFirstTrueAxis0Reverse(ArrayProcessor):
-    NAME = 'ak.first_true_2d(forward=False, axis=0)'
+    NAME = 'ak.first_true_2d, axis=0'
     SORT = 1
 
     def __call__(self):
         _ = first_true_2d(self.array, forward=False, axis=0)
 
 class AKFirstTrueAxis1Reverse(ArrayProcessor):
-    NAME = 'ak.first_true_2d(forward=False, axis=1)'
+    NAME = 'ak.first_true_2d, axis=1'
     SORT = 1
 
     def __call__(self):
@@ -52,7 +52,7 @@ class NPNonZero(ArrayProcessor):
 
 
 class NPArgMaxAxis0(ArrayProcessor):
-    NAME = 'np.any(axis=0), np.argmax(axis=0)'
+    NAME = 'np.any, np.argmax, axis=0'
     SORT = 4
 
     def __call__(self):
@@ -60,7 +60,7 @@ class NPArgMaxAxis0(ArrayProcessor):
         _ = np.argmax(self.array, axis=0)
 
 class NPArgMaxAxis1(ArrayProcessor):
-    NAME = 'np.any(axis=1), np.argmax(axis=1)'
+    NAME = 'np.any, np.argmax, axis=1'
     SORT = 4
 
     def __call__(self):
@@ -172,8 +172,8 @@ class FFThirdPostSecondThird(FixtureFactory):
 CLS_PROCESSOR = (
     AKFirstTrueAxis0Forward,
     AKFirstTrueAxis1Forward,
-    AKFirstTrueAxis0Reverse,
-    AKFirstTrueAxis1Reverse,
+    # AKFirstTrueAxis0Reverse,
+    # AKFirstTrueAxis1Reverse,
     NPNonZero,
     NPArgMaxAxis0,
     NPArgMaxAxis1
@@ -188,37 +188,6 @@ CLS_FF = (
     FFThirdPostSecondThird,
 )
 
-
-# def run_test():
-#     records = []
-#     for size in (100_000, 1_000_000, 10_000_000):
-#         for ff in CLS_FF:
-#             fixture_label, fixture = ff.get_label_array(size)
-#             # TEMP
-#             fixture = fixture.reshape(size // 10, 10)
-
-#             for cls in CLS_PROCESSOR:
-#                 runner = cls(fixture)
-
-#                 record = [cls, NUMBER, fixture_label, size]
-#                 print(record)
-#                 try:
-#                     result = timeit.timeit(
-#                             f'runner()',
-#                             globals=locals(),
-#                             number=NUMBER)
-#                 except OSError:
-#                     result = np.nan
-#                 finally:
-#                     pass
-#                 record.append(result)
-#                 records.append(record)
-
-#     f = sf.Frame.from_records(records,
-#             columns=('cls_processor', 'number', 'fixture', 'size', 'time')
-#             )
-#     print(f)
-#     plot_performance(f)
 
 if __name__ == '__main__':
     from plot import run_test
