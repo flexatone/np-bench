@@ -480,7 +480,7 @@ PyArray_GETPTR1(array, i)
 ```
 
 ```c
-NpyIter_New()
+NpyIter
 ```
 
 ```c
@@ -533,6 +533,7 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
         return NULL;
     }
     ...
+}
 ```
 
 
@@ -578,7 +579,6 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
         i = -1;
     }
     return PyLong_FromSsize_t(i);
-}
 ```
 
 
@@ -589,7 +589,7 @@ layout: none
 # I: Reading Native `PyObject`s From Arrays
 
 <div class="absolute top-0px">
-<img src="" style="height: 550px;" />
+<img src="/fig-1.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -611,7 +611,7 @@ Use `PyArray_GETPTR1()`, then `PyArray_ToScalar()`
 
 Array scalars are `PyObject`s
 
-Use Python C-API `PyObject_IsTrue()` to evaluate elements
+Can continue to use `PyObject_IsTrue()` to evaluate elements
 
 Must manage reference counting for `PyObject`s
 </v-clicks>
@@ -625,7 +625,7 @@ layout: none
 # II: Reading Scalar `PyObject`s From Arrays
 
 <div class="absolute top-0px">
-<img src="" style="height: 550px;" />
+<img src="/fig-2.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -659,13 +659,26 @@ layout: none
 # III: Casting Data Pointers to C-Types
 
 <div class="absolute top-0px">
-<img src="" style="height: 550px;" />
+<img src="/fig-3.png" style="height: 550px;" />
 </div>
 
 <style>
 div {background-color: #666666;}
 </style>
 
+
+---
+layout: none
+---
+# III: Casting Data Pointers to C-Types
+
+<div class="absolute top-0px">
+<img src="/fig-4.png" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #666666;}
+</style>
 
 
 
@@ -692,7 +705,7 @@ layout: none
 # IV: Using `NpyIter`
 
 <div class="absolute top-0px">
-<img src="" style="height: 550px;" />
+<img src="/fig-5.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -726,7 +739,7 @@ layout: none
 # V(a): Using C-Array and Pointer Arithmetic
 
 <div class="absolute top-0px">
-<img src="" style="height: 550px;" />
+<img src="/fig-6.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -762,7 +775,7 @@ layout: none
 # V(b): Using C-Array, Pointer Arithmetic, Loop Unrolling
 
 <div class="absolute top-0px">
-<img src="" style="height: 550px;" />
+<img src="/fig-7.png" style="height: 550px;" />
 </div>
 
 <style>

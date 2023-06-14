@@ -32,8 +32,8 @@ def seconds_to_display(seconds: float, number: int) -> str:
     return f'{seconds: .1f} (s)'
 
 
-def get_versions() -> str:
-    return f'OS: {platform.system()} / np_bench: {npb.__version__} / NumPy: {np.__version__}\n'
+def get_versions(number) -> str:
+    return f'Plots of duration (lower is faster) / OS: {platform.system()} / NumPy: {np.__version__} / Iterations: {number}\n'
 
 def plot_performance(frame, *,
             number: int,
@@ -62,11 +62,6 @@ def plot_performance(frame, *,
             fixture = fixture.sort_values('sort')
 
             results = fixture['time'].values.tolist()
-
-            # names = [cls.NAME for cls in fixture['cls_processor'].values]
-            # # x = np.arange(len(results))
-            # names_display = names
-            # post = ax.bar(names_display, results, color=color)
 
             x_labels = [f'{i}: {cls.NAME}' for i, cls in
                     zip(range(1, len(results) + 1),
@@ -115,22 +110,22 @@ def plot_performance(frame, *,
                 pad=1,
             )
 
-    fig.set_size_inches(9, 3.5) # width, height
+    fig.set_size_inches(6, 3.5) # width, height
 
-    fig.legend(x_bar, x_labels, loc='center right', fontsize=6)
+    fig.legend(x_bar, x_labels, loc='center right', fontsize=4)
     # fig.legend(post, names_display, loc='center right', fontsize=8)
 
     # horizontal, vertical
-    fig.text(.05, .96, f'{title} Performance: {number} Iterations', fontsize=10)
-    fig.text(.05, .90, get_versions(), fontsize=6)
+    fig.text(.05, .96, title, fontsize=10)
+    fig.text(.05, .90, get_versions(number), fontsize=6)
 
     plt.subplots_adjust(
-            left=0.075,
+            left=0.05,
             bottom=0.05,
-            right=0.80,
-            top=0.85,
-            wspace=1, # width
-            hspace=0.1,
+            right=0.86,
+            top=0.8,
+            wspace=0, # width
+            hspace=1.0,
             )
     # plt.rcParams.update({'font.size': 22})
     plt.savefig(fp, dpi=300)

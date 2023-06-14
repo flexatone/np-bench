@@ -13,6 +13,7 @@ from np_bench import first_true_1d_ptr_unroll
 
 sys.path.append(os.getcwd())
 
+from plot import run_test
 from plot import ArrayProcessor
 from plot import Fixture
 
@@ -32,19 +33,19 @@ class AKFirstTrueScalar(ArrayProcessor):
     def __call__(self):
         _ = first_true_1d_scalar(self.array, True)
 
-class AKFirstTrueNpyiter(ArrayProcessor):
-    NAME = 'first_true_1d_npyiter()'
+class AKFirstTrueGetptr(ArrayProcessor):
+    NAME = 'first_true_1d_getptr()'
     SORT = 2
 
     def __call__(self):
-        _ = first_true_1d_npyiter(self.array, True)
+        _ = first_true_1d_getptr(self.array, True)
 
-class AKFirstTrueGetptr(ArrayProcessor):
-    NAME = 'first_true_1d_getptr()'
+class AKFirstTrueNpyiter(ArrayProcessor):
+    NAME = 'first_true_1d_npyiter()'
     SORT = 3
 
     def __call__(self):
-        _ = first_true_1d_getptr(self.array, True)
+        _ = first_true_1d_npyiter(self.array, True)
 
 class AKFirstTruePtr(ArrayProcessor):
     NAME = 'first_true_1d_ptr()'
@@ -189,8 +190,8 @@ class FFThirdPostSecondThird(FixtureFactory):
 CLS_PROCESSOR = (
     AKFirstTrueGetitem,
     AKFirstTrueScalar,
-    AKFirstTrueNpyiter,
     AKFirstTrueGetptr,
+    AKFirstTrueNpyiter,
     AKFirstTruePtr,
     AKFirstTruePtrUnroll,
 
@@ -202,21 +203,51 @@ CLS_PROCESSOR = (
 CLS_FF = (
     FFSingleFirstThird,
     FFSingleSecondThird,
-    FFTenthPostFirstThird,
-    FFTenthPostSecondThird,
+    # FFTenthPostFirstThird,
+    # FFTenthPostSecondThird,
     FFThirdPostFirstThird,
     FFThirdPostSecondThird,
 )
 
 
+SIZES = (100_000, 1_000_000, 10_000_000)
+
 if __name__ == '__main__':
-    from plot import run_test
-    run_test(sizes=(100_000, 1_000_000, 10_000_000),
-            fixtures=CLS_FF,
-            processors=CLS_PROCESSOR,
-            fp=Path('/tmp/first_true_1d.png'),
-            title='first_true_1d()',
-            number=2,
-            )
+
+    directory = Path('doc/bnpy-scipy-2023/public')
+
+    for fn, title, processors in (
+        ('fig-0.png',
+                'np.nonzero(), np.argmax() Performance',
+                (NPNonZero, NPNotAnyArgMax)),
+        ('fig-1.png',
+                'first_true_1d() Performance with PyArray_GETITEM()',
+                (AKFirstTrueGetitem, NPNonZero, NPNotAnyArgMax)),
+        ('fig-2.png',
+                'first_true_1d() Performance with PyArray_ToScalar()',
+                (AKFirstTrueGetitem, AKFirstTrueScalar, NPNonZero, NPNotAnyArgMax)),
+        ('fig-3.png',
+                'first_true_1d() Performance with PyArray_GETPTR1()',
+                (AKFirstTrueGetitem, AKFirstTrueScalar, AKFirstTrueGetptr, NPNonZero, NPNotAnyArgMax)),
+        ('fig-4.png',
+                'first_true_1d() Performance with PyArray_GETPTR1()',
+                (AKFirstTrueGetptr, NPNonZero, NPNotAnyArgMax)),
+        ('fig-5.png',
+                'first_true_1d() Performance with NpyIter',
+                (AKFirstTrueGetptr, AKFirstTrueNpyiter, NPNonZero, NPNotAnyArgMax)),
+        ('fig-6.png',
+                'first_true_1d() Performance with PyArray_DATA()',
+                (AKFirstTrueGetptr, AKFirstTruePtr, NPNonZero, NPNotAnyArgMax)),
+        ('fig-7.png',
+                'first_true_1d() Performance with PyArray_DATA() with Loop Unrolling',
+                (AKFirstTrueGetptr, AKFirstTruePtr, AKFirstTruePtrUnroll, NPNonZero, NPNotAnyArgMax)),
+    ):
+        run_test(sizes=SIZES,
+                fixtures=CLS_FF,
+                processors=processors,
+                fp=directory / fn,
+                title=title,
+                number=50,
+                )
 
 
