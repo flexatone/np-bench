@@ -199,7 +199,7 @@ div {background-color: #666666;}
 # `np.argmax()` 1D
 <Transform :scale="1.6">
 
-```python {all|1|2-3|4|5-6|all}
+```python {all|1|2-3|4|5-6}
 >>> array = np.arange(10_000) == 2_000
 >>> np.argmax(array) # finds first True
 2000
@@ -220,7 +220,7 @@ Finds first value; but cannot get first value from opposite direction
 # `np.argmax()` 2D
 <Transform :scale="1.6">
 
-```python {all|1|2-6|7-8|9-10|all}
+```python {all|1|2-6|7-8|9-10}
 >>> array = np.arange(24).reshape(4,6) % 5 == 0
 >>> array
 array([[ True, False, False, False, False,  True],
@@ -244,7 +244,7 @@ Notice that we get the same result for column 0 and column 1 as all False return
 # `np.nonzero()` 1D
 <Transform :scale="1.6">
 
-```python {all|1|2-3|4-5|6|7-8|9-10|all} {lines:false}
+```python {all|1|2-3|4-5|6|7-8|9-10} {lines:false}
 >>> array = np.arange(10_000) == 2_000
 >>> np.nonzero(array)
 (array([2000]),)
@@ -264,7 +264,7 @@ Notice that we get the same result for column 0 and column 1 as all False return
 # `np.nonzero()` 2D
 <Transform :scale="1.6">
 
-```python {all|1|2-6|7-8|9-10|all}
+```python {all|1|2-6|7-8|9-10}
 >>> array = np.arange(24).reshape(4,6) % 5 == 0
 >>> array
 array([[ True, False, False, False, False,  True],
