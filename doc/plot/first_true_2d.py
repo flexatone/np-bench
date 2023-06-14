@@ -191,11 +191,14 @@ CLS_FF = (
 
 if __name__ == '__main__':
     from plot import run_test
+
+    directory = Path('doc/bnpy-scipy-2023/public')
+
     run_test(sizes=(100_000, 1_000_000, 10_000_000),
             fixtures=CLS_FF,
             processors=CLS_PROCESSOR,
-            fp=Path('/tmp/first_true_2d.png'),
-            title='first_true_2d()',
+            fp=directory / 'ft2d-fig-0.png',
+            title='first_true_2d() Performance',
             number=2,
             )
 
