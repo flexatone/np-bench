@@ -2,9 +2,14 @@ import os
 import sys
 import typing as tp
 from pathlib import Path
-
-from np_bench import first_true_1d
 import numpy as np
+
+from np_bench import first_true_1d_getitem
+from np_bench import first_true_1d_scalar
+from np_bench import first_true_1d_npyiter
+from np_bench import first_true_1d_getptr
+from np_bench import first_true_1d_ptr
+from np_bench import first_true_1d_ptr_unroll
 
 sys.path.append(os.getcwd())
 
@@ -12,16 +17,54 @@ from plot import ArrayProcessor
 from plot import Fixture
 
 #-------------------------------------------------------------------------------
-class AKFirstTrue(ArrayProcessor):
-    NAME = 'first_true_1d()'
+
+class AKFirstTrueGetitem(ArrayProcessor):
+    NAME = 'first_true_1d_getitem()'
     SORT = 0
 
     def __call__(self):
-        _ = first_true_1d(self.array, forward=True)
+        _ = first_true_1d_getitem(self.array, True)
+
+class AKFirstTrueScalar(ArrayProcessor):
+    NAME = 'first_true_1d_scalar()'
+    SORT = 1
+
+    def __call__(self):
+        _ = first_true_1d_scalar(self.array, True)
+
+class AKFirstTrueNpyiter(ArrayProcessor):
+    NAME = 'first_true_1d_npyiter()'
+    SORT = 2
+
+    def __call__(self):
+        _ = first_true_1d_npyiter(self.array, True)
+
+class AKFirstTrueGetptr(ArrayProcessor):
+    NAME = 'first_true_1d_getptr()'
+    SORT = 3
+
+    def __call__(self):
+        _ = first_true_1d_getptr(self.array, True)
+
+class AKFirstTruePtr(ArrayProcessor):
+    NAME = 'first_true_1d_ptr()'
+    SORT = 4
+
+    def __call__(self):
+        _ = first_true_1d_ptr(self.array, True)
+
+class AKFirstTruePtrUnroll(ArrayProcessor):
+    NAME = 'first_true_1d_ptr_unroll()'
+    SORT = 5
+
+    def __call__(self):
+        _ = first_true_1d_ptr_unroll(self.array, True)
+
+#-------------------------------------------------------------------------------
 
 class PYLoop(ArrayProcessor):
     NAME = 'Python Loop'
-    SORT = 0
+    SORT = -1
 
     def __call__(self):
         for i, e in enumerate(self.array):
@@ -31,21 +74,21 @@ class PYLoop(ArrayProcessor):
 
 class NPNonZero(ArrayProcessor):
     NAME = 'np.nonzero()'
-    SORT = 3
+    SORT = 30
 
     def __call__(self):
         _ = np.nonzero(self.array)[0][0]
 
 class NPArgMax(ArrayProcessor):
     NAME = 'np.argmax()'
-    SORT = 1
+    SORT = 10
 
     def __call__(self):
         _ = np.argmax(self.array)
 
 class NPNotAnyArgMax(ArrayProcessor):
     NAME = 'np.any(), np.argmax()'
-    SORT = 2
+    SORT = 20
 
     def __call__(self):
         _ = not np.any(self.array)
@@ -144,9 +187,14 @@ class FFThirdPostSecondThird(FixtureFactory):
 
 
 CLS_PROCESSOR = (
-    AKFirstTrue,
+    AKFirstTrueGetitem,
+    AKFirstTrueScalar,
+    AKFirstTrueNpyiter,
+    AKFirstTrueGetptr,
+    AKFirstTruePtr,
+    AKFirstTruePtrUnroll,
+
     NPNonZero,
-    NPArgMax,
     NPNotAnyArgMax,
     # PYLoop,
     )
