@@ -64,7 +64,7 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
             Py_DECREF(element);
         }
     }
-    if (i < 0 || i >= size ) { // else, return -1
+    if (i < 0 || i >= size ) {
         i = -1;
     }
     return PyLong_FromSsize_t(i);
@@ -113,7 +113,7 @@ first_true_1d_scalar(PyObject *Py_UNUSED(m), PyObject *args)
             Py_DECREF(scalar);
         }
     }
-    if (i < 0 || i >= size ) { // else, return -1
+    if (i < 0 || i >= size ) {
         i = -1;
     }
     return PyLong_FromSsize_t(i);
@@ -162,10 +162,9 @@ first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
             }
         }
     }
-    if (i < 0 || i >= size ) { // else, return -1
+    if (i < 0 || i >= size ) {
         i = -1;
     }
-
     return PyLong_FromSsize_t(i);
 }
 
@@ -232,11 +231,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
             i++;
             data_ptr += stride;
         }
-
-    // Increment the iterator to the next inner loop
     } while(iter_next(iter));
-
-    // no true found
     return PyLong_FromSsize_t(-1);
 end:
     return PyLong_FromSsize_t(i);
@@ -292,7 +287,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
             p--;
         }
     }
-    if (p != p_end) { // else, return -1
+    if (p != p_end) {
         position = p - array_buffer;
     }
 
@@ -328,7 +323,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
     }
 
     npy_intp size = PyArray_SIZE(array);
-    ldiv_t size_div = ldiv((long)size, 4); // quot, rem
+    lldiv_t size_div = lldiv((long long)size, 4); // quot, rem
 
     npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
@@ -376,7 +371,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
             p--;
         }
     }
-    if (p != p_end) { // else, return -1
+    if (p != p_end) {
         position = p - array_buffer;
     }
     NPY_END_THREADS;
@@ -523,7 +518,7 @@ first_true_2d(PyObject *Py_UNUSED(m), PyObject *args, PyObject *kwargs)
                 if (*p) break;
                 p++;
             }
-            if (p != p_end) { // else, return -1
+            if (p != p_end) {
                 position = p - p_start;
             }
         }
@@ -548,7 +543,7 @@ first_true_2d(PyObject *Py_UNUSED(m), PyObject *args, PyObject *kwargs)
                 if (*p) break;
                 p--;
             }
-            if (p != p_end) { // else, return -1
+            if (p != p_end) {
                 position = p - (p_end + 1);
             }
         }

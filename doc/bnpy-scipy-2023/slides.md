@@ -136,44 +136,39 @@ Need to identify case of all `False`
 ---
 layout: none
 ---
-# Stack Overflow 1
-
 <div class="absolute top-0px">
 <img src="/screen-so-1.png" style="height: 550px;" />
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #666;}
 </style>
 
 
 ---
 layout: none
 ---
-# Stack Overflow 2
-
 <div class="absolute top-0px">
 <img src="/screen-so-2.png" style="height: 550px;" />
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #666;}
 </style>
 
 
 ---
 layout: none
 ---
-# NumPy Issue 2269
-
 <div class="absolute top-0px">
 <img src="/screen-gh-npy-issue-2269.png" style="height: 550px;" />
 </div>
 
 <style>
-div {background-color: #fff;}
+    div {background-color: #666;}
 </style>
 
+<!-- NumPy Issue 2269 -->
 
 ---
 ---
@@ -189,7 +184,6 @@ div {background-color: #fff;}
 - `np.nonzero()`
     - Find all non-zero positions
     - Does not short-circuit
-
 
 </Transform>
 
@@ -220,7 +214,7 @@ Finds first value; but cannot get first value from opposite direction
 # `np.argmax()` 2D
 <Transform :scale="1.5">
 
-```python {all|1|2-6|7-8|9-10}
+```python {all|1|1-6|7-8|9-10}
 >>> array = np.arange(24).reshape(4,6) % 5 == 0
 >>> array
 array([[ True, False, False, False, False,  True],
@@ -244,7 +238,7 @@ Notice that we get the same result for column 0 and column 1 as all False return
 # `np.nonzero()` 1D
 <Transform :scale="1.5">
 
-```python {all|1|2-3|4-5|6|7-8|9-10} {lines:false}
+```python {all|1|1-3|1-5|6|6-8|6-10} {lines:false}
 >>> array = np.arange(10_000) == 2_000
 >>> np.nonzero(array)
 (array([2000]),)
@@ -264,7 +258,7 @@ Notice that we get the same result for column 0 and column 1 as all False return
 # `np.nonzero()` 2D
 <Transform :scale="1.5">
 
-```python {all|1|2-6|7-8|9-10}
+```python {all|1|1-6|7-8|9-10}
 >>> array = np.arange(24).reshape(4,6) % 5 == 0
 >>> array
 array([[ True, False, False, False, False,  True],
@@ -286,7 +280,7 @@ Notice that we have read through these coordinates to discover the first true pe
 ---
 layout: none
 ---
-# III: Casting Data Pointers to C-Types
+# Performance of `np.nonzero()` & `np.argmax()`
 
 <div class="absolute top-0px">
 <img src="/ft1d-fig-0.png" style="height: 550px;" />
@@ -297,21 +291,62 @@ div {background-color: #fff;}
 </style>
 
 
+
+---
+---
+# Performance Panels
+
+<Transform :scale="1.2">
+<v-clicks depth="2">
+
+- Bars in a plot are implementations (numbered and labelled in the legend)
+- Rows are Boolean array size (1e5, 1e6, 1e7)
+- Four columns show different fill characteristics
+    - One `True`
+        - Set at 1/3<sup>rd</sup> to the end
+        - Set at 2/3<sup>rd</sup> to the end
+    - 33% of size is `True`
+        - Filled from 1/3<sup>rd</sup> to the end
+        - Filled from 2/3<sup>rd</sup> to the end
+
+</v-clicks>
+</Transform>
+
+
+---
+layout: none
+---
+# Performance of `np.nonzero()` & `np.argmax()`
+
+<div class="absolute top-0px">
+<img src="/ft1d-fig-0.png" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #fff;}
+</style>
+
+
+
+
+
 ---
 ---
 # Opportunities for Improvement
 
 <Transform :scale="1.2">
-<v-clicks>
+<v-clicks depth="2">
 
 - `np.argmax`:
     - Does not handle all-`False` case
-    - Could add an `np.any()` call to find all-`False`
+    - Does not search in reverse
+    - Can use `np.any()` to find all-`False`
     - $\mathcal{O}(2n)$ worst case, but can short-circuit
 - `np.nonzero`
     - Cannot short-circuit
+    - Must discover firs or last from results
     - Always $\mathcal{O}(n)$ as cannot short-circuit
-- Both options are suboptimal
+- Both options seem suboptimal
 
 </v-clicks>
 </Transform>
@@ -332,9 +367,7 @@ Return -1 when all `False` -->
 
 C-Extensions
 
-Cython
-
-Numba
+Cython / Numba
 
 Rust via PyO3
 </v-clicks>
@@ -352,11 +385,11 @@ I will favor writing C-Extensions using the CPython C-API and NumPy C-API
 <Transform :scale="1.5">
 <v-clicks>
 
-A path for doing what needs to be done without PyObjects
+Avoid `PyObject`s
 
 Can use an input array (or arrays) as a C array.
 
-Can build a C array (and return PyObject array)
+Can return a `PyObject` or array
 </v-clicks>
 </Transform>
 
@@ -385,17 +418,14 @@ Must do cross-platform testing in CI (`cibuildwheel`)
 # ``first_true_1d()`` in C
 
 <Transform :scale="1.5">
-<v-clicks>
+<v-clicks depth="2">
 
 - Two Arguments
     - NumPy array
     - A Boolean (`True` for forward, `False` for reverse)
-
-Evaluate elements, return the index of the first `True`
-
-If no `True`, return `-1`
-
-All Code: https://github.com/flexatone/np-bench
+- Evaluate elements, return the index of the first `True`
+- If no `True`, return `-1`
+- Code: https://github.com/flexatone/np-bench
 
 </v-clicks>
 </Transform>
@@ -489,7 +519,6 @@ Using C-Arrays and Pointer Arithmetic (``PyArray_DATA()``)
 </Transform>
 
 
-
 ---
 ---
 # I: Reading Native `PyObject`s From Arrays
@@ -531,7 +560,7 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
         return NULL;
     }
-    ...
+    // ... implementation
 }
 ```
 
@@ -564,7 +593,7 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 # I: Reading Native `PyObject`s From Arrays
 
 ```c
-    else { // not forward
+    else { // reverse
         for (i = size - 1; i >= 0; i--) {
             element = PyArray_GETITEM(array, PyArray_GETPTR1(array, i));
             if(PyObject_IsTrue(element)) {
@@ -619,6 +648,70 @@ Must manage reference counting for `PyObject`s
 
 
 ---
+---
+# II: Reading NumPy Scalar `PyObject`s From Arrays
+
+```c
+static PyObject*
+first_true_1d_scalar(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    // ... parse args
+
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+
+    // ... implementation
+}
+```
+
+
+---
+---
+# II: Reading NumPy Scalar `PyObject`s From Arrays
+
+```c
+    npy_intp size = PyArray_SIZE(array);
+    npy_intp i;
+    PyObject* scalar;
+
+    if (forward) {
+        for (i = 0; i < size; i++) {
+            scalar = PyArray_ToScalar(PyArray_GETPTR1(array, i), array);
+            if(PyObject_IsTrue(scalar)) {
+                Py_DECREF(scalar);
+                break;
+            }
+            Py_DECREF(scalar);
+        }
+    }
+```
+
+
+---
+---
+# II: Reading NumPy Scalar `PyObject`s From Arrays
+
+```c
+    else {
+        for (i = size - 1; i >= 0; i--) {
+            scalar = PyArray_ToScalar(PyArray_GETPTR1(array, i), array);
+            if(PyObject_IsTrue(scalar)) {
+                Py_DECREF(scalar);
+                break;
+            }
+            Py_DECREF(scalar);
+        }
+    }
+    if (i < 0 || i >= size ) {
+        i = -1;
+    }
+    return PyLong_FromSsize_t(i);
+```
+
+
+---
 layout: none
 ---
 # II: Reading NumPy Scalar `PyObject`s From Arrays
@@ -647,9 +740,69 @@ Only process 1D, Boolean arrays
 Use `PyArray_GETPTR1()` and cast to C type
 
 No use of Python C-API, no reference counting
+
+Can release the GIL over core loop
 </v-clicks>
 </Transform>
 
+
+---
+---
+# III: Casting Data Pointers to C-Types
+
+```c
+static PyObject*
+first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    // ... parse args
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+    // ... implementation
+}
+```
+
+
+---
+---
+# III: Casting Data Pointers to C-Types
+
+```c
+    npy_intp size = PyArray_SIZE(array);
+    npy_intp i;
+
+    if (forward) {
+        for (i = 0; i < size; i++) {
+            if(*(npy_bool*)PyArray_GETPTR1(array, i)) {
+                break;
+            }
+        }
+    }
+```
+
+
+---
+---
+# III: Casting Data Pointers to C-Types
+
+```c
+    else { // reverse
+        for (i = size - 1; i >= 0; i--) {
+            if(*(npy_bool*)PyArray_GETPTR1(array, i)) {
+                break;
+            }
+        }
+    }
+    if (i < 0 || i >= size ) {
+        i = -1;
+    }
+    return PyLong_FromSsize_t(i);
+```
 
 
 ---
@@ -692,11 +845,99 @@ Only process 1D, Boolean arrays
 
 Use `NpyIter_New()` to setup iteration
 
-Generality for N-dimensional arrays of diverse homogeniety
+Generality for N-dimensional arrays of diverse homogeneity
+
+Requires more code
+
+Does not support reverse iteration
 </v-clicks>
 </Transform>
 
 
+---
+---
+# IV: Using `NpyIter`
+
+```c
+static PyObject*
+first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    // ... parse args
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+    // ... implementation
+}
+```
+
+---
+---
+# IV: Using `NpyIter`
+
+```c
+    NpyIter *iter = NpyIter_New(
+            array,                                      // array
+            NPY_ITER_READONLY | NPY_ITER_EXTERNAL_LOOP, // iter flags
+            NPY_KEEPORDER,                              // order
+            NPY_NO_CASTING,                             // casting
+            NULL                                        // dtype
+            );
+    if (iter == NULL) {
+        return NULL;
+    }
+
+    NpyIter_IterNextFunc *iter_next = NpyIter_GetIterNext(iter, NULL);
+    if (iter_next == NULL) {
+        NpyIter_Deallocate(iter);
+        return NULL;
+    }
+```
+
+
+---
+---
+# IV: Using `NpyIter`
+
+```c
+    npy_bool **data_ptr_array = (npy_bool**)NpyIter_GetDataPtrArray(iter);
+    npy_bool *data_ptr;
+
+    npy_intp *stride_ptr = NpyIter_GetInnerStrideArray(iter);
+    npy_intp stride;
+
+    npy_intp *inner_size_ptr = NpyIter_GetInnerLoopSizePtr(iter);
+    npy_intp inner_size;
+
+    npy_intp i = 0;
+```
+
+---
+---
+# IV: Using `NpyIter`
+
+```c
+    do {
+        data_ptr = *data_ptr_array;
+        stride = *stride_ptr;
+        inner_size = *inner_size_ptr;
+
+        while (inner_size--) {
+            if (*data_ptr) {
+                goto end;
+            }
+            i++;
+            data_ptr += stride;
+        }
+    } while(iter_next(iter));
+    return PyLong_FromSsize_t(-1);
+end:
+    return PyLong_FromSsize_t(i);
+```
 
 ---
 layout: none
@@ -712,8 +953,6 @@ div {background-color: #fff;}
 </style>
 
 
-
-
 ---
 ---
 # V(a): Using C-Arrays and Pointer Arithmetic
@@ -723,14 +962,78 @@ div {background-color: #fff;}
 
 Only process 1D, Boolean, contiguous arrays
 
-Use `PyArray_DATA()` to get C-array
+Use `PyArray_DATA()` to get pointer to underlying C-array
 
 Advance through array with pointer arithmetic
 </v-clicks>
 </Transform>
 
+---
+---
+# V(a): Using C-Arrays and Pointer Arithmetic
+```c
+static PyObject*
+first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    // ... parse args
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+    if (!PyArray_IS_C_CONTIGUOUS(array)) {
+        PyErr_SetString(PyExc_ValueError, "Array must be contiguous");
+        return NULL;
+    }
+    // ... implementation
+}
+```
 
+---
+---
+# V(a): Using C-Arrays and Pointer Arithmetic
+```c
+    npy_intp size = PyArray_SIZE(array);
+    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
+    Py_ssize_t position = -1;
+    npy_bool *p;
+    npy_bool *p_end;
+
+    if (forward) {
+        p = array_buffer;
+        p_end = p + size;
+        while (p < p_end) {
+            if (*p) {
+                break;
+            }
+            p++;
+        }
+    }
+```
+
+---
+---
+# V(a): Using C-Arrays and Pointer Arithmetic
+```c
+    else { // reverse
+        p = array_buffer + size - 1;
+        p_end = array_buffer - 1;
+        while (p > p_end) {
+            if (*p) {
+                break;
+            }
+            p--;
+        }
+    }
+    if (p != p_end) {
+        position = p - array_buffer;
+    }
+    return PyLong_FromSsize_t(position);
+```
 
 ---
 layout: none
@@ -748,12 +1051,43 @@ div {background-color: #fff;}
 
 ---
 ---
+# Magic?
+
+<Transform :scale="1.5">
+
+- How is it possible that `np.argmax()` is still faster?
+
+</Transform>
+
+
+
+
+---
+---
+# Performance Beyond the Fastest Iteration
+
+<Transform :scale="1.5">
+<v-clicks depth="2">
+
+- Some possiblities
+    - Loop unrolling
+    - SIMD
+    - Cross compilation
+
+</v-clicks>
+</Transform>
+
+
+
+
+---
+---
 # V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 
 <Transform :scale="1.5">
 <v-clicks>
 
-Space-time tradeoff
+Unrolling is a space versus time tradeoff
 
 Only process 1D, Boolean, contiguous arrays
 
@@ -763,12 +1097,74 @@ Advance through array with pointer arithmetic, unrolling units of 4
 </v-clicks>
 </Transform>
 
+---
+---
+# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+```c
+static PyObject*
+first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    // ... parse args
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+    if (!PyArray_IS_C_CONTIGUOUS(array)) {
+        PyErr_SetString(PyExc_ValueError, "Array must be contiguous");
+        return NULL;
+    }
+    // ... implementation
+}
+```
+
+---
+---
+# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+```c
+    npy_intp size = PyArray_SIZE(array);
+    lldiv_t size_div = lldiv((long long)size, 4);
+
+    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
+
+    Py_ssize_t position = -1;
+
+    npy_bool *p;
+    npy_bool *p_end;
+```
+
+---
+---
+# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+```c
+    if (forward) {
+        p = array_buffer;
+        p_end = p + size;
+        while (p < p_end - size_div.rem) {
+            if (*p) break;
+            p++;
+            if (*p) break;
+            p++;
+            if (*p) break;
+            p++;
+            if (*p) break;
+            p++;
+        }
+        while (p < p_end) {
+            if (*p) break;
+            p++;
+        }
+    }
+```
+
 
 ---
 layout: none
 ---
-# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
-
+# V(b)
 <div class="absolute top-0px">
 <img src="/ft1d-fig-7.png" style="height: 550px;" />
 </div>
@@ -788,7 +1184,7 @@ div {background-color: #fff;}
 
 Specialized 1D and 2D functions provides the best performance
 
-Apply the same approch, but C or Fotran order matters
+Apply the same approach, but C or Fortan order matters
 </v-clicks>
 </Transform>
 
@@ -812,8 +1208,6 @@ Advance through array with pointer arithmetic, unrolling units of 4
 ---
 layout: none
 ---
-# 2D Forced Contiguous C-Order-Array, Pointer Arithmetic, Loop Unrolling
-
 <div class="absolute top-0px">
 <img src="/ft2d-fig-0.png" style="height: 550px;" />
 </div>
