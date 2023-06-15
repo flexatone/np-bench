@@ -280,8 +280,6 @@ Notice that we have read through these coordinates to discover the first true pe
 ---
 layout: none
 ---
-# Performance of `np.nonzero()` & `np.argmax()`
-
 <div class="absolute top-0px">
 <img src="/ft1d-fig-0.png" style="height: 550px;" />
 </div>
@@ -316,8 +314,6 @@ div {background-color: #fff;}
 ---
 layout: none
 ---
-# Performance of `np.nonzero()` & `np.argmax()`
-
 <div class="absolute top-0px">
 <img src="/ft1d-fig-0.png" style="height: 550px;" />
 </div>
@@ -614,8 +610,6 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 layout: none
 ---
-# I: Reading Native `PyObject`s From Arrays
-
 <div class="absolute top-0px">
 <img src="/ft1d-fig-1.png" style="height: 550px;" />
 </div>
@@ -714,8 +708,6 @@ first_true_1d_scalar(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 layout: none
 ---
-# II: Reading NumPy Scalar `PyObject`s From Arrays
-
 <div class="absolute top-0px">
 <img src="/ft1d-fig-2.png" style="height: 550px;" />
 </div>
@@ -808,8 +800,6 @@ first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 layout: none
 ---
-# III: Casting Data Pointers to C-Types
-
 <div class="absolute top-0px">
 <img src="/ft1d-fig-3.png" style="height: 550px;" />
 </div>
@@ -822,8 +812,6 @@ div {background-color: #fff;}
 ---
 layout: none
 ---
-# III: Casting Data Pointers to C-Types
-
 <div class="absolute top-0px">
 <img src="/ft1d-fig-4.png" style="height: 550px;" />
 </div>
@@ -942,8 +930,6 @@ end:
 ---
 layout: none
 ---
-# IV: Using `NpyIter`
-
 <div class="absolute top-0px">
 <img src="/ft1d-fig-5.png" style="height: 550px;" />
 </div>
@@ -1038,8 +1024,6 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 layout: none
 ---
-# V(a): Using C-Arrays and Pointer Arithmetic
-
 <div class="absolute top-0px">
 <img src="/ft1d-fig-6.png" style="height: 550px;" />
 </div>
@@ -1164,7 +1148,6 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 layout: none
 ---
-# V(b)
 <div class="absolute top-0px">
 <img src="/ft1d-fig-7.png" style="height: 550px;" />
 </div>
