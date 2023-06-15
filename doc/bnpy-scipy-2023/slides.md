@@ -113,11 +113,6 @@ More narrow routines might be able to out-perform flexible routines
 </v-clicks>
 </Transform>
 
-<style>
-ul li {list-style-type: disc;}
-</style>
-
-
 
 ---
 ---
@@ -126,13 +121,13 @@ ul li {list-style-type: disc;}
 <Transform :scale="1.5">
 <v-clicks>
 
-Given a 1D Boolean array, what is the index of the first `True`
+Given a 1D Boolean array, what is the index of the first `True`?
 
-Given a 2D Boolean array, what are the indices of the first True per axis
+Given a 2D Boolean array, what are the indices of the first True per axis?
 
 Need to be able to search in both directions
 
-Need to know if there are no `True`
+Need to identify case of all `False`
 </v-clicks>
 </Transform>
 
@@ -148,7 +143,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 
@@ -162,7 +157,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 
@@ -176,7 +171,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 
@@ -186,9 +181,14 @@ div {background-color: #666666;}
 
 <Transform :scale="1.5">
 
-`np.argmax()`
-
-`np.nonzero()`
+- `np.argmax()`
+    - Find the maximum value in an array
+    - Specialized for Boolean array
+        - Returns the first True
+        - Short-circuit
+- `np.nonzero()`
+    - Find all non-zero positions
+    - Does not short-circuit
 
 
 </Transform>
@@ -197,9 +197,9 @@ div {background-color: #666666;}
 ---
 ---
 # `np.argmax()` 1D
-<Transform :scale="1.6">
+<Transform :scale="1.5">
 
-```python {all|1|2-3|4|5-6}
+```python {all|1|1-3|4|4-6}
 >>> array = np.arange(10_000) == 2_000
 >>> np.argmax(array) # finds first True
 2000
@@ -218,7 +218,7 @@ Finds first value; but cannot get first value from opposite direction
 ---
 ---
 # `np.argmax()` 2D
-<Transform :scale="1.6">
+<Transform :scale="1.5">
 
 ```python {all|1|2-6|7-8|9-10}
 >>> array = np.arange(24).reshape(4,6) % 5 == 0
@@ -242,7 +242,7 @@ Notice that we get the same result for column 0 and column 1 as all False return
 ---
 ---
 # `np.nonzero()` 1D
-<Transform :scale="1.6">
+<Transform :scale="1.5">
 
 ```python {all|1|2-3|4-5|6|7-8|9-10} {lines:false}
 >>> array = np.arange(10_000) == 2_000
@@ -262,7 +262,7 @@ Notice that we get the same result for column 0 and column 1 as all False return
 ---
 ---
 # `np.nonzero()` 2D
-<Transform :scale="1.6">
+<Transform :scale="1.5">
 
 ```python {all|1|2-6|7-8|9-10}
 >>> array = np.arange(24).reshape(4,6) % 5 == 0
@@ -279,31 +279,38 @@ array([[ True, False, False, False, False,  True],
 </Transform>
 
 <!--
-Notice that we have read through these coordinates to discuver the first true per axis
+Notice that we have read through these coordinates to discover the first true per axis
 -->
+
+
+---
+layout: none
+---
+# III: Casting Data Pointers to C-Types
+
+<div class="absolute top-0px">
+<img src="/ft1d-fig-0.png" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #fff;}
+</style>
 
 
 ---
 ---
 # Opportunities for Improvement
 
-<Transform :scale="1.25">
+<Transform :scale="1.2">
 <v-clicks>
 
 - `np.argmax`:
-
     - Does not handle all-`False` case
-
     - Could add an `np.any()` call to find all-`False`
-
     - $\mathcal{O}(2n)$ worst case, but can short-circuit
-
 - `np.nonzero`
-
     - Cannot short-circuit
-
     - Always $\mathcal{O}(n)$ as cannot short-circuit
-
 - Both options are suboptimal
 
 </v-clicks>
@@ -380,11 +387,13 @@ Must do cross-platform testing in CI (`cibuildwheel`)
 <Transform :scale="1.5">
 <v-clicks>
 
-Take an array and a forward Boolean (where False is reverse)
+- Two Arguments
+    - NumPy array
+    - A Boolean (`True` for forward, `False` for reverse)
 
 Evaluate elements, return the index of the first `True`
 
-If no `True`, return -1
+If no `True`, return `-1`
 
 All Code: https://github.com/flexatone/np-bench
 
@@ -394,7 +403,7 @@ All Code: https://github.com/flexatone/np-bench
 
 ---
 ---
-# A Minimal C Extension
+# A Minimal C Extension Module `np_bench`
 
 ```c
 // excluding define, include statements
@@ -459,33 +468,23 @@ static struct PyModuleDef npb_module = {
 ```
 
 
-
 ---
 ---
-# Five Ways to Read 1D Array Data
+# Five Ways to Read (1D) Array Data in C
 
 <Transform :scale="1.5">
 <v-clicks>
 
-```c
-PyArray_GETITEM(array, PyArray_GETPTR1(array, i))
-```
+Reading Native `PyObject`s From Arrays (``PyArray_GETITEM``)
 
-```c
-PyArray_ToScalar(PyArray_GETPTR1(array, i), array)
-```
+Reading NumPy Scalar `PyObject`s From Arrays (``PyArray_ToScalar``)
 
-```c
-PyArray_GETPTR1(array, i)
-```
+Casting Data Pointers to C-Types (``PyArray_GETPTR1``)
 
-```c
-NpyIter
-```
+Using `NpyIter`
 
-```c
-PyArray_DATA(array)
-```
+Using C-Arrays and Pointer Arithmetic (``PyArray_DATA()``)
+
 </v-clicks>
 </Transform>
 
@@ -500,13 +499,13 @@ PyArray_DATA(array)
 
 Only process 1D arrays
 
-Use `PyArray_GETPTR1()`, then `PyArray_GETITEM()`
+Use `PyArray_GETPTR1()` to get pointer to element
 
-Convert array element to `PyObject`
+Use `PyArray_GETITEM()` to build corresponding `PyObject`
 
-Use Python C-API `PyObject_IsTrue()` to evaluate elements
+Use Python C-API `PyObject_IsTrue()` to evaluate element
 
-Must manage reference counting for `PyObject`s
+Must manage reference counts for `PyObject`s
 </v-clicks>
 </Transform>
 
@@ -515,7 +514,7 @@ Must manage reference counting for `PyObject`s
 ---
 # I: Reading Native `PyObject`s From Arrays
 
-```c
+```c {all|1-3,18|4-5|7-11|12-16}
 static PyObject*
 first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -593,23 +592,23 @@ layout: none
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 
 
 ---
 ---
-# II: Reading Scalar `PyObject`s From Arrays
+# II: Reading NumPy Scalar `PyObject`s From Arrays
 
 <Transform :scale="1.5">
 <v-clicks>
 
 Only process 1D arrays
 
-Use `PyArray_GETPTR1()`, then `PyArray_ToScalar()`
+Use `PyArray_GETPTR1()` to get pointer to element
 
-Array scalars are `PyObject`s
+Use `PyArray_ToScalar()` to build NumPy scalar `PyObject`
 
 Can continue to use `PyObject_IsTrue()` to evaluate elements
 
@@ -622,14 +621,14 @@ Must manage reference counting for `PyObject`s
 ---
 layout: none
 ---
-# II: Reading Scalar `PyObject`s From Arrays
+# II: Reading NumPy Scalar `PyObject`s From Arrays
 
 <div class="absolute top-0px">
 <img src="/ft1d-fig-2.png" style="height: 550px;" />
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 
@@ -663,7 +662,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 
@@ -677,7 +676,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 
@@ -709,7 +708,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 
@@ -717,7 +716,7 @@ div {background-color: #666666;}
 
 ---
 ---
-# V(a): Using C-Array and Pointer Arithmetic
+# V(a): Using C-Arrays and Pointer Arithmetic
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -736,20 +735,20 @@ Advance through array with pointer arithmetic
 ---
 layout: none
 ---
-# V(a): Using C-Array and Pointer Arithmetic
+# V(a): Using C-Arrays and Pointer Arithmetic
 
 <div class="absolute top-0px">
 <img src="/ft1d-fig-6.png" style="height: 550px;" />
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 
 ---
 ---
-# V(b): Using C-Array, Pointer Arithmetic, Loop Unrolling
+# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -768,14 +767,14 @@ Advance through array with pointer arithmetic, unrolling units of 4
 ---
 layout: none
 ---
-# V(b): Using C-Array, Pointer Arithmetic, Loop Unrolling
+# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 
 <div class="absolute top-0px">
 <img src="/ft1d-fig-7.png" style="height: 550px;" />
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 
@@ -820,7 +819,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #666666;}
+div {background-color: #fff;}
 </style>
 
 

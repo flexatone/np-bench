@@ -1,7 +1,11 @@
 h1 {
     font-size: 2.4em !important;
     padding-bottom: 8;
+    color: grey;
+    font-weight: bold;
 }
 :not(pre) > code::before, :not(pre) > code::after {
 	content: "";
 }
+
+ul li {list-style-type: disc;}
