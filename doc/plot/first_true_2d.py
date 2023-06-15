@@ -199,7 +199,7 @@ if __name__ == '__main__':
             processors=CLS_PROCESSOR,
             fp=directory / 'ft2d-fig-0.png',
             title='first_true_2d() Performance',
-            number=2,
+            number=50,
             )
 
 

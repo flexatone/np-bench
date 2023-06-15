@@ -589,7 +589,7 @@ layout: none
 # I: Reading Native `PyObject`s From Arrays
 
 <div class="absolute top-0px">
-<img src="/fig-1.png" style="height: 550px;" />
+<img src="/ft1d-fig-1.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -625,7 +625,7 @@ layout: none
 # II: Reading Scalar `PyObject`s From Arrays
 
 <div class="absolute top-0px">
-<img src="/fig-2.png" style="height: 550px;" />
+<img src="/ft1d-fig-2.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -659,7 +659,7 @@ layout: none
 # III: Casting Data Pointers to C-Types
 
 <div class="absolute top-0px">
-<img src="/fig-3.png" style="height: 550px;" />
+<img src="/ft1d-fig-3.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -673,7 +673,7 @@ layout: none
 # III: Casting Data Pointers to C-Types
 
 <div class="absolute top-0px">
-<img src="/fig-4.png" style="height: 550px;" />
+<img src="/ft1d-fig-4.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -705,7 +705,7 @@ layout: none
 # IV: Using `NpyIter`
 
 <div class="absolute top-0px">
-<img src="/fig-5.png" style="height: 550px;" />
+<img src="/ft1d-fig-5.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -739,15 +739,12 @@ layout: none
 # V(a): Using C-Array and Pointer Arithmetic
 
 <div class="absolute top-0px">
-<img src="/fig-6.png" style="height: 550px;" />
+<img src="/ft1d-fig-6.png" style="height: 550px;" />
 </div>
 
 <style>
 div {background-color: #666666;}
 </style>
-
-
-
 
 
 ---
@@ -768,14 +765,13 @@ Advance through array with pointer arithmetic, unrolling units of 4
 </Transform>
 
 
-
 ---
 layout: none
 ---
 # V(b): Using C-Array, Pointer Arithmetic, Loop Unrolling
 
 <div class="absolute top-0px">
-<img src="/fig-7.png" style="height: 550px;" />
+<img src="/ft1d-fig-7.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -784,15 +780,27 @@ div {background-color: #666666;}
 
 
 
-
-
 ---
 ---
-# VI: 2D Forced Contiguous C-Order-Array, Pointer Arithmetic, Loop Unrolling
+# `first_true_2d`
 
 <Transform :scale="1.5">
 <v-clicks>
-Only process 1D, Boolean, contiguous arrays
+
+Specialized 1D and 2D functions provides the best performance
+
+Apply the same approch, but C or Fotran order matters
+</v-clicks>
+</Transform>
+
+
+---
+---
+# 2D Forced Contiguous C-Order-Array, Pointer Arithmetic, Loop Unrolling
+
+<Transform :scale="1.5">
+<v-clicks>
+Only process 2D, Boolean, contiguous arrays
 
 Use `PyArray_DATA()` to get C-array
 
@@ -805,10 +813,10 @@ Advance through array with pointer arithmetic, unrolling units of 4
 ---
 layout: none
 ---
-# VI: 2D Forced Contiguous C-Order-Array, Pointer Arithmetic, Loop Unrolling
+# 2D Forced Contiguous C-Order-Array, Pointer Arithmetic, Loop Unrolling
 
 <div class="absolute top-0px">
-<img src="" style="height: 550px;" />
+<img src="/ft2d-fig-0.png" style="height: 550px;" />
 </div>
 
 <style>
@@ -819,7 +827,6 @@ div {background-color: #666666;}
 
 
 ---
-layout: quote
 ---
 # Thanks!
 
@@ -829,6 +836,8 @@ Thanks to Brandt Bucher & Charles Burkland
 Sli.dev slides
 
 Code: https://github.com/flexatone/np-bench
+
+`first_true_1d`, `first_true_2d` packaged: https://pypi.org/project/arraykit
 
 StaticFrame: https://static-frame.dev
 
