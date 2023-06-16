@@ -565,11 +565,10 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 # I: Reading Native `PyObject`s From Arrays
 
-```c
+```c {all|1-3|4,13|5,12|6|7-11}
     npy_intp size = PyArray_SIZE(array);
     npy_intp i;
     PyObject* element;
-
     if (forward) {
         for (i = 0; i < size; i++) {
             element = PyArray_GETITEM(array, PyArray_GETPTR1(array, i));
@@ -588,7 +587,7 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 # I: Reading Native `PyObject`s From Arrays
 
-```c
+```c {all|1,10|2,9|3|4-8|11-14}
     else { // reverse
         for (i = size - 1; i >= 0; i--) {
             element = PyArray_GETITEM(array, PyArray_GETPTR1(array, i));
@@ -599,7 +598,7 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
             Py_DECREF(element);
         }
     }
-    if (i < 0 || i >= size ) { // else, return -1
+    if (i < 0 || i >= size ) {
         i = -1;
     }
     return PyLong_FromSsize_t(i);
@@ -618,6 +617,11 @@ layout: none
 div {background-color: #fff;}
 </style>
 
+
+---
+layout: center
+---
+# What about NumPy scalars?
 
 
 ---
