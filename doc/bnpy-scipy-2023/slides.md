@@ -515,6 +515,13 @@ Using C-Arrays and Pointer Arithmetic (``PyArray_DATA()``)
 </Transform>
 
 
+
+---
+layout: center
+---
+# Working with `PyObject`s
+
+
 ---
 ---
 # I: Reading Native `PyObject`s From Arrays
@@ -539,7 +546,7 @@ Must manage reference counts for `PyObject`s
 ---
 # I: Reading Native `PyObject`s From Arrays
 
-```c {all|1-3,18|4-5|7-11|12-16}
+```c {all|1-3,18|4-5|7-12|13-16}
 static PyObject*
 first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -580,7 +587,6 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
         }
     }
 ```
-
 
 
 ---
@@ -649,7 +655,7 @@ Must manage reference counting for `PyObject`s
 ---
 # II: Reading NumPy Scalar `PyObject`s From Arrays
 
-```c
+```c {all|1-3,12|4|6-9|11}
 static PyObject*
 first_true_1d_scalar(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -669,7 +675,7 @@ first_true_1d_scalar(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 # II: Reading NumPy Scalar `PyObject`s From Arrays
 
-```c
+```c {all|1-3|5,14|6,13|7|8-12}
     npy_intp size = PyArray_SIZE(array);
     npy_intp i;
     PyObject* scalar;
@@ -691,7 +697,7 @@ first_true_1d_scalar(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 # II: Reading NumPy Scalar `PyObject`s From Arrays
 
-```c
+```c {all|1,10|2,9|3|4-8|11-14}
     else {
         for (i = size - 1; i >= 0; i--) {
             scalar = PyArray_ToScalar(PyArray_GETPTR1(array, i), array);
@@ -721,7 +727,10 @@ div {background-color: #fff;}
 </style>
 
 
-
+---
+layout: center
+---
+# Avoiding `PyObject`s entirely
 
 
 ---
@@ -746,7 +755,7 @@ Can release the GIL over core loop
 ---
 # III: Casting Data Pointers to C-Types
 
-```c
+```c {all|1-3,14|4|5-8|9-12|13}
 static PyObject*
 first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -768,7 +777,7 @@ first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 # III: Casting Data Pointers to C-Types
 
-```c
+```c {all|1-2|4,10|5,9|6-8}
     npy_intp size = PyArray_SIZE(array);
     npy_intp i;
 
@@ -786,7 +795,7 @@ first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 # III: Casting Data Pointers to C-Types
 
-```c
+```c {all|1,7|2,6|3-5|8-11}
     else { // reverse
         for (i = size - 1; i >= 0; i--) {
             if(*(npy_bool*)PyArray_GETPTR1(array, i)) {
@@ -825,6 +834,10 @@ div {background-color: #fff;}
 </style>
 
 
+---
+layout: center
+---
+# Does the NumPy C API offer other options?
 
 ---
 ---
@@ -850,7 +863,7 @@ Does not support reverse iteration
 ---
 # IV: Using `NpyIter`
 
-```c
+```c {all|1-3,14|4|5-8|9-12|13}
 static PyObject*
 first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -871,7 +884,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 # IV: Using `NpyIter`
 
-```c
+```c {all|1-7|8-10|11-15}
     NpyIter *iter = NpyIter_New(
             array,                                      // array
             NPY_ITER_READONLY | NPY_ITER_EXTERNAL_LOOP, // iter flags
@@ -882,7 +895,6 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
     if (iter == NULL) {
         return NULL;
     }
-
     NpyIter_IterNextFunc *iter_next = NpyIter_GetIterNext(iter, NULL);
     if (iter_next == NULL) {
         NpyIter_Deallocate(iter);
@@ -895,7 +907,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 # IV: Using `NpyIter`
 
-```c
+```c {all|1-2|4-5|7-8|10}
     npy_bool **data_ptr_array = (npy_bool**)NpyIter_GetDataPtrArray(iter);
     npy_bool *data_ptr;
 
@@ -912,7 +924,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 # IV: Using `NpyIter`
 
-```c
+```c {all|1,13|2-4|6,12|7-9,15-16|10-11|14}
     do {
         data_ptr = *data_ptr_array;
         stride = *stride_ptr;
@@ -941,6 +953,12 @@ layout: none
 <style>
 div {background-color: #fff;}
 </style>
+
+
+---
+layout: center
+---
+# Assuming array contiguity
 
 
 ---
@@ -1037,17 +1055,13 @@ div {background-color: #fff;}
 </style>
 
 
+
 ---
+layout: center
 ---
-# Magic?
+# What magic does ``np.argmarx()`` use?
 
-<Transform :scale="1.5">
-
-- How is it possible that `np.argmax()` is still faster?
-
-</Transform>
-
-
+<!-- - How is it possible that `np.argmax()` is still faster? -->
 
 
 ---
@@ -1064,8 +1078,6 @@ div {background-color: #fff;}
 
 </v-clicks>
 </Transform>
-
-
 
 
 ---
