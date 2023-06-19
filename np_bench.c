@@ -339,17 +339,17 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
         p_end = p + size;
 
         while (p < p_end - size_div.rem) {
-            if (*p) break;
+            if (*p) {break;}
             p++;
-            if (*p) break;
+            if (*p) {break;}
             p++;
-            if (*p) break;
+            if (*p) {break;}
             p++;
-            if (*p) break;
+            if (*p) {break;}
             p++;
         }
         while (p < p_end) {
-            if (*p) break;
+            if (*p) {break;}
             p++;
         }
     }
@@ -357,17 +357,17 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
         p = array_buffer + size - 1;
         p_end = array_buffer - 1;
         while (p > p_end + size_div.rem) {
-            if (*p) break;
+            if (*p) {break;}
             p--;
-            if (*p) break;
+            if (*p) {break;}
             p--;
-            if (*p) break;
+            if (*p) {break;}
             p--;
-            if (*p) break;
+            if (*p) {break;}
             p--;
         }
         while (p > p_end) {
-            if (*p) break;
+            if (*p) {break;}
             p--;
         }
     }

@@ -49,30 +49,29 @@ Creator of StaticFrame, an alternative DataFrame library
 <Transform :scale="1.5">
 <v-clicks>
 
-Python (using C PyObjects) is relatively slow
+Python (using C `PyObject`s) is relatively slow
 
-C-extensions offer opportunities for using C-types (at C performance)
+C-extensions using C-types are fast
 
-With NumPy, we get flexible usage of C-arrays in Python
-
+With NumPy, we get C-typed arrays in Python
 </v-clicks>
 </Transform>
 
 
 ---
 ---
-# My Journey
+# Optimizing Python and NumPy Usage
 
 <Transform :scale="1.5">
 <v-clicks>
 
-Built StaticFrame leveraging NumPy
+Even with NumPy, performance opportunities remain
 
-Performance studies identify opportunities
+Custom NumPy array builders (`delimited_to_arrays()`)
 
-For pure Python, can implement routines in C-types
+Replacing non-array `PyObject` usage with C-types (`BlockIndex`)
 
-What about routines that are already using NumPy?
+What about NumPy routines?
 </v-clicks>
 </Transform>
 
@@ -86,8 +85,7 @@ What about routines that are already using NumPy?
 
 Some NumPy routines are implemented in Python
 
-Some NumPy routines might do more than we need
-
+Many NumPy routines do more than we need
 </v-clicks>
 </Transform>
 
@@ -97,18 +95,13 @@ Some NumPy routines might do more than we need
 # Can NumPy Routines be Optimized?
 
 <Transform :scale="1.5">
-<v-clicks>
+<v-clicks depth="2">
 
-Many NumPy routines are flexible
-
-* Handle N-dimensional arrays
-
-* Handle full diversity of dtypes
-
-* Handle non-array (i.e., list, tuple) inputs
-
-
-More narrow routines might be able to out-perform flexible routines
+- NumPy routines are flexible
+    - Handle N-dimensional arrays
+    - Handle full diversity of dtypes
+    - Handle non-array (i.e., list, tuple) inputs
+- More narrow routines might be able to out-perform flexible routines
 
 </v-clicks>
 </Transform>
@@ -116,21 +109,20 @@ More narrow routines might be able to out-perform flexible routines
 
 ---
 ---
-# Case Study: Finding the First True in an Array
+# Finding the First `True`
 
 <Transform :scale="1.5">
 <v-clicks>
 
-Given a 1D Boolean array, what is the index of the first `True`?
+1D Boolean array: find the index of the first `True`
 
-Given a 2D Boolean array, what are the indices of the first True per axis?
+2D Boolean array: find the indices of the first `True` per axis
 
-Need to be able to search in both directions
+Search in both directions
 
-Need to identify case of all `False`
+Identify all `False`
 </v-clicks>
 </Transform>
-
 
 
 ---
@@ -167,24 +159,36 @@ layout: none
 <style>
     div {background-color: #666;}
 </style>
-
 <!-- NumPy Issue 2269 -->
 
+
 ---
 ---
-# Finding the First True: NumPy Options
+# Finding the First True with NumPy
+
+<Transform :scale="2">
+<v-clicks depth="3">
+
+`np.argmax()`
+
+`np.nonzero()`
+</v-clicks>
+</Transform>
+
+
+---
+---
+# `np.argmax()`
 
 <Transform :scale="1.5">
+<v-clicks depth="3">
 
-- `np.argmax()`
-    - Find the maximum value in an array
-    - Specialized for Boolean array
-        - Returns the first True
-        - Short-circuit
-- `np.nonzero()`
-    - Find all non-zero positions
-    - Does not short-circuit
+Return the index of the maximum value in an array
 
+Specialized for Boolean arrays to short-circuit
+
+Returns `0` if all `False`
+</v-clicks>
 </Transform>
 
 
@@ -202,11 +206,6 @@ layout: none
 0
 ```
 </Transform>
-
-<!--
-Cannot distguish all False from True at 0
-Finds first value; but cannot get first value from opposite direction
--->
 
 
 ---
@@ -228,10 +227,25 @@ array([0, 4, 3, 2])
 
 ```
 </Transform>
-
 <!--
 Notice that we get the same result for column 0 and column 1 as all False returns 0
 -->
+
+---
+---
+# `np.nonzero()`
+
+<Transform :scale="1.5">
+<v-clicks depth="3">
+
+Finds all non-zero positions
+
+Returns a tuple of arrays per dimension
+
+Cannot short-circuit
+</v-clicks>
+</Transform>
+
 
 ---
 ---
@@ -271,10 +285,15 @@ array([[ True, False, False, False, False,  True],
 [True, True, True, True, True]
 ```
 </Transform>
-
 <!--
 Notice that we have read through these coordinates to discover the first true per axis
 -->
+
+
+---
+layout: center
+---
+# Performance of `np.argmax()` and `np.nonzero()`
 
 
 ---
@@ -287,7 +306,6 @@ layout: none
 <style>
 div {background-color: #fff;}
 </style>
-
 
 
 ---
@@ -323,9 +341,6 @@ div {background-color: #fff;}
 </style>
 
 
-
-
-
 ---
 ---
 # Opportunities for Improvement
@@ -334,24 +349,22 @@ div {background-color: #fff;}
 <v-clicks depth="2">
 
 - `np.argmax`:
-    - Does not handle all-`False` case
+    - All-`False` can be handled with `np.any()`
+    - Worst case Requires two iterations, but can short-circuit
     - Does not search in reverse
-    - Can use `np.any()` to find all-`False`
-    - $\mathcal{O}(2n)$ worst case, but can short-circuit
 - `np.nonzero`
-    - Cannot short-circuit
-    - Must discover firs or last from results
-    - Always $\mathcal{O}(n)$ as cannot short-circuit
+    - Always requires one iteration, cannot short-circuit
+    - Collects more than we need
+    - Must iterate over results to find first or last
 - Both options seem suboptimal
 
 </v-clicks>
 </Transform>
 
 <!-- What if we write a C-extension to do just what we need
-
 Only handle 1D, 2D contiguous Boolean arrays
-
-Return -1 when all `False` -->
+Return -1 when all `False`
+-->
 
 
 ---
@@ -368,7 +381,6 @@ Cython / Numba
 Rust via PyO3
 </v-clicks>
 </Transform>
-
 <!--
 I will favor writing C-Extensions using the CPython C-API and NumPy C-API
 -->
@@ -381,11 +393,11 @@ I will favor writing C-Extensions using the CPython C-API and NumPy C-API
 <Transform :scale="1.5">
 <v-clicks>
 
-Avoid `PyObject`s
+Core routine can be done without `PyObject`s
 
-Can use an input array (or arrays) as a C array.
+Can operate directly on a C array.
 
-Can return a `PyObject` or array
+Can return a `PyObject` or NumPy array
 </v-clicks>
 </Transform>
 
@@ -399,7 +411,7 @@ Can return a `PyObject` or array
 
 Custom types are hard
 
-Writing single functions is not that bad
+Single functions are straightforward
 
 Python, NumPy C-APIs are reasonably well documented
 
@@ -408,10 +420,9 @@ Must do cross-platform testing in CI (`cibuildwheel`)
 </Transform>
 
 
-
 ---
 ---
-# ``first_true_1d()`` in C
+# ``first_true_1d()`` as a C Extension
 
 <Transform :scale="1.5">
 <v-clicks depth="2">
@@ -428,18 +439,22 @@ Must do cross-platform testing in CI (`cibuildwheel`)
 
 
 ---
+layout: center
+---
+# Defining a C extension
+
+
+---
 ---
 # A Minimal C Extension Module `np_bench`
 
-```c
-// excluding define, include statements
+```c {all|1-5|6-8,17|9|10-16}
 static struct PyModuleDef npb_module = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = "np_bench",
     .m_size = -1,
 };
-
-PyObject *
+PyObject*
 PyInit_np_bench(void)
 {
     import_array();
@@ -454,12 +469,11 @@ PyInit_np_bench(void)
 ```
 
 
-
 ---
 ---
 # A C Function as a Module-Level Python Function
 
-```c
+```c {all|1-3,14|4-5|6-11|12-13}
 static PyObject*
 first_true_1d(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -471,8 +485,8 @@ first_true_1d(PyObject *Py_UNUSED(m), PyObject *args)
             &forward)) {
         return NULL;
     }
-    PyObject* post = PyLong_FromSsize_t(-1); // temporarily always return -1
-    return post;
+    // implmentation
+    return PyLong_FromSsize_t(-1);
 }
 ```
 
@@ -480,7 +494,7 @@ first_true_1d(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 # Adding a C Function to a Python Module
 
-```c
+```c {all|1-4|5-10}
 static PyMethodDef npb_methods[] =  {
     {"first_true_1d", (PyCFunction)first_true_1d, METH_VARARGS, NULL},
     {NULL},
@@ -493,27 +507,26 @@ static struct PyModuleDef npb_module = {
 };
 ```
 
+---
+layout: center
+---
+# Reading elements from an array in C
+
 
 ---
 ---
-# Five Ways to Read (1D) Array Data in C
+# Reading Elements from an Array in C
 
 <Transform :scale="1.5">
 <v-clicks>
 
-Reading Native `PyObject`s From Arrays (``PyArray_GETITEM``)
-
-Reading NumPy Scalar `PyObject`s From Arrays (``PyArray_ToScalar``)
-
-Casting Data Pointers to C-Types (``PyArray_GETPTR1``)
-
-Using `NpyIter`
-
-Using C-Arrays and Pointer Arithmetic (``PyArray_DATA()``)
-
+1. Reading Native `PyObject`s From Arrays (``PyArray_GETITEM``)
+1. Reading NumPy Scalar `PyObject`s From Arrays (``PyArray_ToScalar``)
+1. Casting Data Pointers to C-Types (``PyArray_GETPTR1``)
+1. Using `NpyIter`
+1. Using C-Arrays and Pointer Arithmetic (``PyArray_DATA()``)
 </v-clicks>
 </Transform>
-
 
 
 ---
@@ -546,13 +559,12 @@ Must manage reference counts for `PyObject`s
 ---
 # I: Reading Native `PyObject`s From Arrays
 
-```c {all|1-3,18|4-5|7-12|13-16}
+```c {all|1-3,17|4-5|6-11|12-16}
 static PyObject*
 first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 {
     PyArrayObject *array = NULL;
     int forward = 1;
-
     if (!PyArg_ParseTuple(args,
             "O!p:first_true_1d_getitem",
             &PyArray_Type, &array,
@@ -611,7 +623,6 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 ```
 
 
-
 ---
 layout: none
 ---
@@ -655,17 +666,15 @@ Must manage reference counting for `PyObject`s
 ---
 # II: Reading NumPy Scalar `PyObject`s From Arrays
 
-```c {all|1-3,12|4|6-9|11}
+```c {all|1-3,10|4|5-8|9}
 static PyObject*
 first_true_1d_scalar(PyObject *Py_UNUSED(m), PyObject *args)
 {
     // ... parse args
-
     if (PyArray_NDIM(array) != 1) {
         PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
         return NULL;
     }
-
     // ... implementation
 }
 ```
@@ -837,7 +846,7 @@ div {background-color: #fff;}
 ---
 layout: center
 ---
-# Does the NumPy C API offer other options?
+# Other options with the NumPy C API
 
 ---
 ---
@@ -846,11 +855,11 @@ layout: center
 <Transform :scale="1.5">
 <v-clicks>
 
-Only process 1D, Boolean arrays
-
 Use `NpyIter_New()` to setup iteration
 
 Generality for N-dimensional arrays of diverse homogeneity
+
+Perform stride-sized pointer arithmetic in inner loop
 
 Requires more code
 
@@ -879,6 +888,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
     // ... implementation
 }
 ```
+
 
 ---
 ---
@@ -920,6 +930,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
     npy_intp i = 0;
 ```
 
+
 ---
 ---
 # IV: Using `NpyIter`
@@ -943,6 +954,7 @@ end:
     return PyLong_FromSsize_t(i);
 ```
 
+
 ---
 layout: none
 ---
@@ -958,7 +970,7 @@ div {background-color: #fff;}
 ---
 layout: center
 ---
-# Assuming array contiguity
+# Assuming array contiguity...
 
 
 ---
@@ -968,7 +980,7 @@ layout: center
 <Transform :scale="1.5">
 <v-clicks>
 
-Only process 1D, Boolean, contiguous arrays
+Only process 1D, Boolean, and *contiguous* arrays
 
 Use `PyArray_DATA()` to get pointer to underlying C-array
 
@@ -979,7 +991,7 @@ Advance through array with pointer arithmetic
 ---
 ---
 # V(a): Using C-Arrays and Pointer Arithmetic
-```c
+```c {all|1-3,18|4|5-8|9-12|13-16|17}
 static PyObject*
 first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -1003,10 +1015,10 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 ---
 # V(a): Using C-Arrays and Pointer Arithmetic
-```c
-    npy_intp size = PyArray_SIZE(array);
+```c {all|1|3-6|8,17|9,10|11,16|12-15}
     npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
+    npy_intp size = PyArray_SIZE(array);
     Py_ssize_t position = -1;
     npy_bool *p;
     npy_bool *p_end;
@@ -1026,7 +1038,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 ---
 # V(a): Using C-Arrays and Pointer Arithmetic
-```c
+```c {all|1,10|2-3|4,9|5-8|11-14}
     else { // reverse
         p = array_buffer + size - 1;
         p_end = array_buffer - 1;
@@ -1042,6 +1054,13 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
     }
     return PyLong_FromSsize_t(position);
 ```
+
+
+---
+layout: center
+---
+# This must be the fastest approach...
+
 
 ---
 layout: none
@@ -1059,23 +1078,19 @@ div {background-color: #fff;}
 ---
 layout: center
 ---
-# What magic does ``np.argmarx()`` use?
-
-<!-- - How is it possible that `np.argmax()` is still faster? -->
+# How is ``np.argmax()`` still faster?
 
 
 ---
 ---
-# Performance Beyond the Fastest Iteration
+# Performance Beyond Contiguous Iteration
 
 <Transform :scale="1.5">
 <v-clicks depth="2">
 
-- Some possiblities
-    - Loop unrolling
-    - SIMD
-    - Cross compilation
+Loop unrolling... even with modern compilers
 
+Single instruction, multiple data (SIMD) instructions
 </v-clicks>
 </Transform>
 
@@ -1097,10 +1112,11 @@ Advance through array with pointer arithmetic, unrolling units of 4
 </v-clicks>
 </Transform>
 
+
 ---
 ---
 # V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
-```c
+```c {all|1-3,18|4|5-8|9-12|13-16|17}
 static PyObject*
 first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -1121,43 +1137,80 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 }
 ```
 
+
 ---
 ---
 # V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
-```c
+```c {all|1|3-4|6-9}
+    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
+
     npy_intp size = PyArray_SIZE(array);
     lldiv_t size_div = lldiv((long long)size, 4);
 
-    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
-
     Py_ssize_t position = -1;
-
     npy_bool *p;
     npy_bool *p_end;
 ```
 
+
 ---
 ---
 # V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
-```c
+```c {all|1,18|2-3|4,13|5-12|14,17|15-16}
     if (forward) {
         p = array_buffer;
         p_end = p + size;
         while (p < p_end - size_div.rem) {
-            if (*p) break;
+            if (*p) {break;}
             p++;
-            if (*p) break;
+            if (*p) {break;}
             p++;
-            if (*p) break;
+            if (*p) {break;}
             p++;
-            if (*p) break;
+            if (*p) {break;}
             p++;
         }
         while (p < p_end) {
-            if (*p) break;
+            if (*p) {break;}
             p++;
         }
     }
+```
+
+
+---
+---
+# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+```c {all|1,18|2-3|4,13|5-12|14,17|15-16}
+    else { // reverse
+        p = array_buffer + size - 1;
+        p_end = array_buffer - 1;
+        while (p > p_end + size_div.rem) {
+            if (*p) {break;}
+            p--;
+            if (*p) {break;}
+            p--;
+            if (*p) {break;}
+            p--;
+            if (*p) {break;}
+            p--;
+        }
+        while (p > p_end) {
+            if (*p) {break;}
+            p--;
+        }
+    }
+```
+
+
+---
+---
+# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+```c {all}
+    if (p != p_end) {
+        position = p - array_buffer;
+    }
+    return PyLong_FromSsize_t(position);
 ```
 
 
@@ -1173,35 +1226,38 @@ div {background-color: #fff;}
 </style>
 
 
+---
+layout: center
+---
+# What about 2D?
+
 
 ---
 ---
-# `first_true_2d`
+# `first_true_2d()`
 
-<Transform :scale="1.5">
-<v-clicks>
+<Transform :scale="1.2">
+<v-clicks depth="2">
 
-Specialized 1D and 2D functions provides the best performance
+- Deliver results by axis
+    - Axis 0 returns an array of columns length
+    - Axis 1 returns an array of rows length
+- Might be C or Fortran contiguous
+- If C-contiguous and Axis 1
+    - Use pointer arithmetic (and loop unrolling) through each row
+    - Short-circuit if `True` found, jump to next row
+- F-contiguous and Axis 0 works the same
+- Use `PyArray_NewCopy()` to get new contiguous ordering
+- Use `PyArray_DATA()` to get C-array
 
-Apply the same approach, but C or Fortan order matters
 </v-clicks>
 </Transform>
 
 
 ---
+layout: center
 ---
-# 2D Forced Contiguous C-Order-Array, Pointer Arithmetic, Loop Unrolling
-
-<Transform :scale="1.5">
-<v-clicks>
-Only process 2D, Boolean, contiguous arrays
-
-Use `PyArray_DATA()` to get C-array
-
-Advance through array with pointer arithmetic, unrolling units of 4
-</v-clicks>
-</Transform>
-
+# Can we outfperform `np.argmax()` in 2D?
 
 
 ---
@@ -1216,6 +1272,23 @@ div {background-color: #fff;}
 </style>
 
 
+---
+---
+# Reflections
+
+<Transform :scale="1.5">
+<v-clicks depth="2">
+
+- Recognize when the work can be done with C-types
+- Implement limited functions
+    - Only support dimensionality needed
+    - Specialized 1D and 2D are most practical
+    - Only support needed dtypes
+    - Require contiguity when appropriate
+- Constantly test performance
+
+</v-clicks>
+</Transform>
 
 
 ---
@@ -1223,7 +1296,6 @@ div {background-color: #fff;}
 # Thanks!
 
 <Transform :scale="1.5">
-Thanks to Brandt Bucher & Charles Burkland
 
 Sli.dev slides
 
