@@ -1088,9 +1088,63 @@ layout: center
 <Transform :scale="1.5">
 <v-clicks depth="2">
 
-Loop unrolling... even with modern compilers
-
 Single instruction, multiple data (SIMD) instructions
+
+... via CPU dispatch `NPY_CPU_DISPATCH_CALL_XB`
+</v-clicks>
+</Transform>
+
+
+---
+---
+# NumPy SIMD `BOOL_argmax`
+<Transform :scale="0.8">
+```c {all|1-3,25|4-7|8,23|9-12|13-16|17-18|19-24}
+NPY_NO_EXPORT int NPY_CPU_DISPATCH_CURFX(BOOL_argmax)
+(npy_bool *ip, npy_intp len, npy_intp *mindx, PyArrayObject *NPY_UNUSED(aip))
+{
+    npy_intp i = 0;
+    const npyv_u8 zero = npyv_zero_u8();
+    const int vstep = npyv_nlanes_u8;
+    const int wstep = vstep * 4;
+    for (npy_intp n = len & -wstep; i < n; i += wstep) {
+        npyv_u8 a = npyv_load_u8(ip + i + vstep*0);
+        npyv_u8 b = npyv_load_u8(ip + i + vstep*1);
+        npyv_u8 c = npyv_load_u8(ip + i + vstep*2);
+        npyv_u8 d = npyv_load_u8(ip + i + vstep*3);
+        npyv_b8 m_a = npyv_cmpeq_u8(a, zero);
+        npyv_b8 m_b = npyv_cmpeq_u8(b, zero);
+        npyv_b8 m_c = npyv_cmpeq_u8(c, zero);
+        npyv_b8 m_d = npyv_cmpeq_u8(d, zero);
+        npyv_b8 m_ab = npyv_and_b8(m_a, m_b);
+        npyv_b8 m_cd = npyv_and_b8(m_c, m_d);
+        npy_uint64 m = npyv_tobits_b8(npyv_and_b8(m_ab, m_cd));
+        if ((npy_int64)m != ((1LL << vstep) - 1)) { // if not all zero
+            break;
+        }
+    }
+    // ... element-wise evaluate from current i to the end
+}
+```
+</Transform>
+<!--
+From: numpy/core/src/multiarray/argfunc.dispatch.c.src
+See also: misc.h
+numpy/core/src/_simd/_simd_inc.h.src
+// convert boolean vector to integer bitfield
+NPY_FINLINE npy_uint64 npyv_tobits_b8(npyv_b8 a)
+ -->
+
+---
+---
+# Performance Beyond Contiguous Iteration
+
+<Transform :scale="1.5">
+<v-clicks depth="2">
+
+SIMD is hard in C
+
+Maybe loop unrolling?
 </v-clicks>
 </Transform>
 
