@@ -975,7 +975,7 @@ layout: center
 
 ---
 ---
-# V(a): Using C-Arrays and Pointer Arithmetic
+# V(a.): Using C-Arrays and Pointer Arithmetic
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -990,7 +990,7 @@ Advance through array with pointer arithmetic
 
 ---
 ---
-# V(a): Using C-Arrays and Pointer Arithmetic
+# V(a.): Using C-Arrays and Pointer Arithmetic
 ```c {all|1-3,18|4|5-8|9-12|13-16|17}
 static PyObject*
 first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
@@ -1014,7 +1014,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(a): Using C-Arrays and Pointer Arithmetic
+# V(a.): Using C-Arrays and Pointer Arithmetic
 ```c {all|1|3-6|8,17|9,10|11,16|12-15}
     npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
@@ -1037,7 +1037,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(a): Using C-Arrays and Pointer Arithmetic
+# V(a.): Using C-Arrays and Pointer Arithmetic
 ```c {all|1,10|2-3|4,9|5-8|11-14}
     else { // reverse
         p = array_buffer + size - 1;
@@ -1151,7 +1151,7 @@ Maybe loop unrolling?
 
 ---
 ---
-# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -1169,7 +1169,7 @@ Advance through array with pointer arithmetic, unrolling units of 4
 
 ---
 ---
-# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 ```c {all|1-3,18|4|5-8|9-12|13-16|17}
 static PyObject*
 first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
@@ -1194,7 +1194,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 ```c {all|1|3-4|6-9}
     npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
@@ -1209,7 +1209,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 ```c {all|1,18|2-3|4,13|5-12|14,17|15-16}
     if (forward) {
         p = array_buffer;
@@ -1234,7 +1234,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 ```c {all|1,18|2-3|4,13|5-12|14,17|15-16}
     else { // reverse
         p = array_buffer + size - 1;
@@ -1259,7 +1259,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(b): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 ```c {all}
     if (p != p_end) {
         position = p - array_buffer;
@@ -1278,6 +1278,141 @@ layout: none
 <style>
 div {background-color: #fff;}
 </style>
+
+
+---
+---
+# Performance Beyond Contiguous Iteration
+
+<Transform :scale="1.5">
+<v-clicks depth="2">
+
+SIMD processes many elements at once
+
+Use `memcmp()` to compare raw memory to zero array
+
+Standard library `memcmp()` might use SIMD
+</v-clicks>
+</Transform>
+
+
+---
+---
+# V(c.): Using C-Arrays, `memcmp()` Lookahead
+
+<Transform :scale="1.5">
+<v-clicks>
+
+Use `memcmp()` comparison to all-zero for lookahead identification
+
+Only process 1D, Boolean, contiguous arrays
+
+Use `PyArray_DATA()` to get C-array
+
+Lookhead in units of 16 bytes
+
+Less code than loop unrolling.
+</v-clicks>
+</Transform>
+
+
+---
+---
+# V(c.): Using C-Arrays, `memcmp()` Lookahead
+```c {all|1|2-4,19|5|6-9|10-13|14-17|18}
+#define MEMCMP_SIZE 16
+static PyObject*
+first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    // ... parse args
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+    if (!PyArray_IS_C_CONTIGUOUS(array)) {
+        PyErr_SetString(PyExc_ValueError, "Array must be contiguous");
+        return NULL;
+    }
+    // ... implementation
+}
+```
+
+
+---
+---
+# V(c.): Using C-Arrays, `memcmp()` Lookahead
+```c {all|1|3-4|6-9}
+    static npy_bool zero_buffer[MEMCMP_SIZE] = {0};
+    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
+
+    npy_intp size = PyArray_SIZE(array);
+    lldiv_t size_div = lldiv((long long)size, MEMCMP_SIZE); // quot, rem
+
+    Py_ssize_t position = -1;
+    npy_bool *p;
+    npy_bool *p_end;
+```
+
+
+---
+---
+# V(c.): Using C-Arrays, `memcmp()` Lookahead
+```c {all}
+    if (forward) {
+        p = array_buffer;
+        p_end = p + size;
+
+        while (p < p_end - size_div.rem) {
+            if (memcmp(p, zero_buffer, MEMCMP_SIZE) != 0) {break;} // found a true
+            p += MEMCMP_SIZE;
+        }
+        while (p < p_end) {
+            if (*p) {break;}
+            p++;
+        }
+    }
+```
+
+
+---
+---
+# V(c.): Using C-Arrays, `memcmp()` Lookahead
+```c {all}
+    else {
+        p = array_buffer + size - 1;
+        p_end = array_buffer - 1;
+        while (p > p_end + size_div.rem) {
+            if (memcmp(p, zero_buffer, MEMCMP_SIZE) != 0) {break;}
+            p -= MEMCMP_SIZE;
+        }
+        while (p > p_end) {
+            if (*p) {break;}
+            p--;
+        }
+    }
+    if (p != p_end) {
+        position = p - array_buffer;
+    }
+    return PyLong_FromSsize_t(position);
+```
+
+
+---
+layout: none
+---
+<div class="absolute top-0px">
+<img src="/ft1d-fig-8.png" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #fff;}
+</style>
+
+
 
 
 ---
