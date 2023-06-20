@@ -157,7 +157,7 @@ layout: none
 </div>
 
 <style>
-    div {background-color: #666;}
+div {background-color: #666;}
 </style>
 <!-- NumPy Issue 2269 -->
 
