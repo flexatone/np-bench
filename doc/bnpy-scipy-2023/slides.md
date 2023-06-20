@@ -166,8 +166,8 @@ layout: none
 ---
 # Finding the First True with NumPy
 
-<Transform :scale="2">
-<v-clicks depth="3">
+<Transform :scale="1.5">
+<v-clicks>
 
 `np.argmax()`
 
