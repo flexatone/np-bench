@@ -12,6 +12,7 @@ def test_first_true_1d_a():
             npb.first_true_1d_getptr,
             npb.first_true_1d_ptr,
             npb.first_true_1d_ptr_unroll,
+            npb.first_true_1d_memcmp,
             ):
         assert (
             func(np.array([False, False, True, False]), True) == 2)
@@ -29,6 +30,7 @@ def test_first_true_1d_b():
             npb.first_true_1d_getptr,
             npb.first_true_1d_ptr,
             npb.first_true_1d_ptr_unroll,
+            npb.first_true_1d_memcmp,
             ):
         assert (
             func( np.array([False, False, True, False]), False) == 2)
