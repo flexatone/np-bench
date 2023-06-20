@@ -217,11 +217,11 @@ if __name__ == '__main__':
                 'first_true_2d() Performance with memcmp()',
                 (AKFirstTrueMemcmpAxis0Forward, AKFirstTrueMemcmpAxis1Forward,
                 NPNonZero,NPArgMaxAxis0, NPArgMaxAxis1)),
-        # ('ft2d-fig-1.png',
-        #         'first_true_2d() Performance with memcmp',
-        #         (AKFirstTrueUnrollAxis0Forward, AKFirstTrueUnrollAxis1Forward,
-        #         AKFirstTrueMemcmpAxis0Forward, AKFirstTrueMemcmpAxis1Forward,
-        #         NPNonZero,NPArgMaxAxis0, NPArgMaxAxis1)),
+        ('ft2d-fig-1.png',
+                'first_true_2d() Performance with memcmp',
+                (AKFirstTrueUnrollAxis0Forward, AKFirstTrueUnrollAxis1Forward,
+                AKFirstTrueMemcmpAxis0Forward, AKFirstTrueMemcmpAxis1Forward,
+                NPNonZero,NPArgMaxAxis0, NPArgMaxAxis1)),
     ):
 
         run_test(sizes=SIZES,

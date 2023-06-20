@@ -378,7 +378,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
     return PyLong_FromSsize_t(position);
 }
 
-#define MEMCMP_SIZE 16
+#define MEMCMP_SIZE 8
 static PyObject*
 first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -424,7 +424,9 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
         p_end = p + size;
 
         while (p < p_end - size_div.rem) {
-            if (memcmp(p, zero_buffer, MEMCMP_SIZE) != 0) {break;} // found a true
+            if (memcmp(p, zero_buffer, MEMCMP_SIZE) != 0) {
+                break;
+            } // found a true
             p += MEMCMP_SIZE;
         }
         while (p < p_end) {
@@ -436,7 +438,9 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
         p = array_buffer + size - 1;
         p_end = array_buffer - 1;
         while (p > p_end + size_div.rem) {
-            if (memcmp(p, zero_buffer, MEMCMP_SIZE) != 0) {break;}
+            if (memcmp(p - MEMCMP_SIZE + 1, zero_buffer, MEMCMP_SIZE) != 0) {
+                break;
+            }
             p -= MEMCMP_SIZE;
         }
         while (p > p_end) {
@@ -773,7 +777,9 @@ first_true_2d_memcmp(PyObject *Py_UNUSED(m), PyObject *args, PyObject *kwargs)
             p_end = buffer_ind + (count_col * r) - 1;
 
             while (p > p_end + div_col.rem) {
-                if (memcmp(p, zero_buffer, MEMCMP_SIZE) != 0) {break;}
+                if (memcmp(p - MEMCMP_SIZE + 1, zero_buffer, MEMCMP_SIZE) != 0) {
+                    break;
+                }
                 p -= MEMCMP_SIZE;
             }
             while (p > p_end) {
