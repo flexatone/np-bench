@@ -48,3 +48,16 @@ def test_first_true_1d_npyiter():
 
     # import ipdb; ipdb.set_trace()
 
+
+def test_first_true_2d_a():
+    a1 = array = np.arange(24).reshape(4,6) % 5 == 0
+    for func in (
+            npb.first_true_2d_unroll,
+            npb.first_true_2d_memcmp,
+            ):
+        post0 = func(array, axis=0)
+        assert post0.tolist() == [0, -1, 3, 2, 1, 0]
+        post1 = func(array, axis=1)
+        assert post1.tolist() == [0, 4, 3, 2]
+
+

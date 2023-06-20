@@ -3,7 +3,9 @@ import sys
 import typing as tp
 from pathlib import Path
 
-from np_bench import first_true_2d
+from np_bench import first_true_2d_unroll
+from np_bench import first_true_2d_memcmp
+
 import np_bench as npb
 import numpy as np
 
@@ -13,33 +15,47 @@ from plot import ArrayProcessor
 from plot import Fixture
 
 #-------------------------------------------------------------------------------
-class AKFirstTrueAxis0Forward(ArrayProcessor):
-    NAME = 'ak.first_true_2d, axis=0'
+class AKFirstTrueUnrollAxis0Forward(ArrayProcessor):
+    NAME = 'first_true_2d_unroll, axis=0'
     SORT = 0
 
     def __call__(self):
-        _ = first_true_2d(self.array, forward=True, axis=0)
+        _ = first_true_2d_unroll(self.array, forward=True, axis=0)
 
-class AKFirstTrueAxis1Forward(ArrayProcessor):
-    NAME = 'ak.first_true_2d, axis=1'
+class AKFirstTrueUnrollAxis1Forward(ArrayProcessor):
+    NAME = 'first_true_2d_unroll, axis=1'
     SORT = 0
 
     def __call__(self):
-        _ = first_true_2d(self.array, forward=True, axis=1)
+        _ = first_true_2d_unroll(self.array, forward=True, axis=1)
 
-class AKFirstTrueAxis0Reverse(ArrayProcessor):
-    NAME = 'ak.first_true_2d, axis=0'
-    SORT = 1
+# class AKFirstTrueUnrollAxis0Reverse(ArrayProcessor):
+#     NAME = 'ak.first_true_2d, axis=0'
+#     SORT = 1
+
+#     def __call__(self):
+#         _ = first_true_2d(self.array, forward=False, axis=0)
+
+# class AKFirstTrueUnrollAxis1Reverse(ArrayProcessor):``
+#     NAME = 'ak.first_true_2d, axis=1'
+#     SORT = 1
+
+#     def __call__(self):
+#         _ = first_true_2d(self.array, forward=False, axis=1)
+
+class AKFirstTrueMemcmpAxis0Forward(ArrayProcessor):
+    NAME = 'first_true_2d, axis=0'
+    SORT = 0
 
     def __call__(self):
-        _ = first_true_2d(self.array, forward=False, axis=0)
+        _ = first_true_2d_memcmp(self.array, forward=True, axis=0)
 
-class AKFirstTrueAxis1Reverse(ArrayProcessor):
-    NAME = 'ak.first_true_2d, axis=1'
-    SORT = 1
+class AKFirstTrueMemcmpAxis1Forward(ArrayProcessor):
+    NAME = 'first_true_2d, axis=1'
+    SORT = 0
 
     def __call__(self):
-        _ = first_true_2d(self.array, forward=False, axis=1)
+        _ = first_true_2d_memcmp(self.array, forward=True, axis=1)
 
 
 class NPNonZero(ArrayProcessor):
@@ -170,8 +186,8 @@ class FFThirdPostSecondThird(FixtureFactory):
 
 
 CLS_PROCESSOR = (
-    AKFirstTrueAxis0Forward,
-    AKFirstTrueAxis1Forward,
+    AKFirstTrueUnrollAxis0Forward,
+    AKFirstTrueUnrollAxis1Forward,
     # AKFirstTrueAxis0Reverse,
     # AKFirstTrueAxis1Reverse,
     NPNonZero,
@@ -188,19 +204,33 @@ CLS_FF = (
     FFThirdPostSecondThird,
 )
 
+SIZES = (100_000, 1_000_000, 10_000_000)
+
 
 if __name__ == '__main__':
     from plot import run_test
 
     directory = Path('doc/bnpy-scipy-2023/public')
 
-    run_test(sizes=(100_000, 1_000_000, 10_000_000),
-            fixtures=CLS_FF,
-            processors=CLS_PROCESSOR,
-            fp=directory / 'ft2d-fig-0.png',
-            title='first_true_2d() Performance',
-            number=50,
-            )
+    for fn, title, processors in (
+        ('ft2d-fig-0.png',
+                'first_true_2d() Performance with memcmp()',
+                (AKFirstTrueMemcmpAxis0Forward, AKFirstTrueMemcmpAxis1Forward,
+                NPNonZero,NPArgMaxAxis0, NPArgMaxAxis1)),
+        # ('ft2d-fig-1.png',
+        #         'first_true_2d() Performance with memcmp',
+        #         (AKFirstTrueUnrollAxis0Forward, AKFirstTrueUnrollAxis1Forward,
+        #         AKFirstTrueMemcmpAxis0Forward, AKFirstTrueMemcmpAxis1Forward,
+        #         NPNonZero,NPArgMaxAxis0, NPArgMaxAxis1)),
+    ):
+
+        run_test(sizes=SIZES,
+                fixtures=CLS_FF,
+                processors=processors,
+                fp=directory / fn,
+                title=title,
+                number=50,
+                )
 
 
 
