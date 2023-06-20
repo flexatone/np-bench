@@ -10,6 +10,7 @@ from np_bench import first_true_1d_npyiter
 from np_bench import first_true_1d_getptr
 from np_bench import first_true_1d_ptr
 from np_bench import first_true_1d_ptr_unroll
+from np_bench import first_true_1d_memcmp
 
 sys.path.append(os.getcwd())
 
@@ -60,6 +61,14 @@ class AKFirstTruePtrUnroll(ArrayProcessor):
 
     def __call__(self):
         _ = first_true_1d_ptr_unroll(self.array, True)
+
+class AKFirstTrueMemcmp(ArrayProcessor):
+    NAME = 'first_true_1d_memcmp()'
+    SORT = 5
+
+    def __call__(self):
+        _ = first_true_1d_memcmp(self.array, True)
+
 
 #-------------------------------------------------------------------------------
 
@@ -217,37 +226,40 @@ if __name__ == '__main__':
     directory = Path('doc/bnpy-scipy-2023/public')
 
     for fn, title, processors in (
-        ('ft1d-fig-0.png',
-                'np.nonzero(), np.argmax() Performance',
-                (NPNonZero, NPNotAnyArgMax)),
-        ('ft1d-fig-1.png',
-                'first_true_1d() Performance with PyArray_GETITEM()',
-                (AKFirstTrueGetitem, NPNonZero, NPNotAnyArgMax)),
-        ('ft1d-fig-2.png',
-                'first_true_1d() Performance with PyArray_ToScalar()',
-                (AKFirstTrueGetitem, AKFirstTrueScalar, NPNonZero, NPNotAnyArgMax)),
-        ('ft1d-fig-3.png',
-                'first_true_1d() Performance with PyArray_GETPTR1()',
-                (AKFirstTrueGetitem, AKFirstTrueScalar, AKFirstTrueGetptr, NPNonZero, NPNotAnyArgMax)),
-        ('ft1d-fig-4.png',
-                'first_true_1d() Performance with PyArray_GETPTR1()',
-                (AKFirstTrueGetptr, NPNonZero, NPNotAnyArgMax)),
-        ('ft1d-fig-5.png',
-                'first_true_1d() Performance with NpyIter',
-                (AKFirstTrueGetptr, AKFirstTrueNpyiter, NPNonZero, NPNotAnyArgMax)),
-        ('ft1d-fig-6.png',
-                'first_true_1d() Performance with PyArray_DATA()',
-                (AKFirstTrueGetptr, AKFirstTruePtr, NPNonZero, NPNotAnyArgMax)),
-        ('ft1d-fig-7.png',
-                'first_true_1d() Performance with PyArray_DATA() with Loop Unrolling',
-                (AKFirstTrueGetptr, AKFirstTruePtr, AKFirstTruePtrUnroll, NPNonZero, NPNotAnyArgMax)),
+        # ('ft1d-fig-0.png',
+        #         'np.nonzero(), np.argmax() Performance',
+        #         (NPNonZero, NPNotAnyArgMax)),
+        # ('ft1d-fig-1.png',
+        #         'first_true_1d() Performance with PyArray_GETITEM()',
+        #         (AKFirstTrueGetitem, NPNonZero, NPNotAnyArgMax)),
+        # ('ft1d-fig-2.png',
+        #         'first_true_1d() Performance with PyArray_ToScalar()',
+        #         (AKFirstTrueGetitem, AKFirstTrueScalar, NPNonZero, NPNotAnyArgMax)),
+        # ('ft1d-fig-3.png',
+        #         'first_true_1d() Performance with PyArray_GETPTR1()',
+        #         (AKFirstTrueGetitem, AKFirstTrueScalar, AKFirstTrueGetptr, NPNonZero, NPNotAnyArgMax)),
+        # ('ft1d-fig-4.png',
+        #         'first_true_1d() Performance with PyArray_GETPTR1()',
+        #         (AKFirstTrueGetptr, NPNonZero, NPNotAnyArgMax)),
+        # ('ft1d-fig-5.png',
+        #         'first_true_1d() Performance with NpyIter',
+        #         (AKFirstTrueGetptr, AKFirstTrueNpyiter, NPNonZero, NPNotAnyArgMax)),
+        # ('ft1d-fig-6.png',
+        #         'first_true_1d() Performance with PyArray_DATA()',
+        #         (AKFirstTrueGetptr, AKFirstTruePtr, NPNonZero, NPNotAnyArgMax)),
+        # ('ft1d-fig-7.png',
+        #         'first_true_1d() Performance with PyArray_DATA() with Loop Unrolling',
+        #         (AKFirstTrueGetptr, AKFirstTruePtr, AKFirstTruePtrUnroll, NPNonZero, NPNotAnyArgMax)),
+        ('ft1d-fig-8.png',
+                'first_true_1d() Performance with PyArray_DATA() and memcmp()',
+                (AKFirstTruePtr, AKFirstTruePtrUnroll, AKFirstTrueMemcmp, NPArgMax, NPNotAnyArgMax)),
     ):
         run_test(sizes=SIZES,
                 fixtures=CLS_FF,
                 processors=processors,
                 fp=directory / fn,
                 title=title,
-                number=50,
+                number=1000,
                 )
 
 
