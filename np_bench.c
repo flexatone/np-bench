@@ -457,8 +457,6 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 }
 
 
-
-
 static char *first_true_2d_kwarg_names[] = {
     "array",
     "forward",

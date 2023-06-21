@@ -4,6 +4,8 @@ import timeit
 import sys
 import os
 import platform
+import math
+
 
 import numpy as np
 import static_frame as sf
@@ -39,6 +41,7 @@ def plot_performance(frame, *,
             number: int,
             fp: Path,
             title: str,
+            log_scale: bool = False,
             ):
     fixture_total = len(frame['fixture'].unique())
     cat_total = len(frame['size'].unique())
@@ -79,35 +82,49 @@ def plot_performance(frame, *,
             ax.set_title(plot_title, fontsize=6)
             ax.set_box_aspect(0.75) # makes taller tan wide
 
+
             time_max = fixture["time"].max()
             time_min = fixture["time"].min()
-            y_ticks = [0, time_min, time_max * 0.5, time_max]
-            y_labels = [
-                "",
-                seconds_to_display(time_min, number),
-                seconds_to_display(time_max * 0.5, number),
-                seconds_to_display(time_max, number),
-            ]
-            if time_min > time_max * 0.25:
-                # remove the min if it is greater than quarter
-                y_ticks.pop(1)
-                y_labels.pop(1)
 
-            ax.set_yticks(y_ticks)
-            ax.set_yticklabels(y_labels, fontsize=4)
+            if log_scale:
+                ax.set_yscale('log')
+                y_ticks = []
+                for v in range(
+                        math.floor(math.log(time_min, 10)),
+                        math.floor(math.log(time_max, 10)) + 1,
+                        ):
+                    y_ticks.append(1 * pow(10, v))
+                ax.set_yticks(y_ticks)
+            else:
+                y_ticks = [0, time_min, time_max * 0.5, time_max]
+                y_labels = [
+                    "",
+                    seconds_to_display(time_min, number),
+                    seconds_to_display(time_max * 0.5, number),
+                    seconds_to_display(time_max, number),
+                ]
+                if time_min > time_max * 0.25:
+                    # remove the min if it is greater than quarter
+                    y_ticks.pop(1)
+                    y_labels.pop(1)
+                ax.set_yticks(y_ticks)
+                ax.set_yticklabels(y_labels)
+
             ax.tick_params(
                 axis="y",
                 length=2,
                 width=0.5,
                 pad=1,
+                labelsize=4,
             )
             ax.set_xticks(x)
-            ax.set_xticklabels(x_tick_labels, fontsize=4)
+            ax.set_xticklabels(x_tick_labels)
             ax.tick_params(
                 axis="x",
                 length=2,
                 width=0.5,
                 pad=1,
+                labelsize=4,
             )
 
     fig.set_size_inches(6, 3.5) # width, height
@@ -177,4 +194,9 @@ def run_test(*,
             columns=('cls_processor', 'cls_fixture', 'number', 'fixture', 'size', 'time')
             )
     print(f)
-    plot_performance(f, number=number, fp=fp, title=title)
+    if 'Log' in title:
+        plot_performance(f, number=number, fp=fp, title=title, log_scale=True)
+    else:
+        plot_performance(f, number=number, fp=fp, title=title, log_scale=False)
+
+

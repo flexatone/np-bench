@@ -250,16 +250,29 @@ if __name__ == '__main__':
         # ('ft1d-fig-7.png',
         #         'first_true_1d() Performance with PyArray_DATA() with Loop Unrolling',
         #         (AKFirstTrueGetptr, AKFirstTruePtr, AKFirstTruePtrUnroll, NPNonZero, NPNotAnyArgMax)),
-        ('ft1d-fig-8.png',
-                'first_true_1d() Performance with PyArray_DATA() and memcmp()',
-                (AKFirstTruePtr, AKFirstTruePtrUnroll, AKFirstTrueMemcmp, NPArgMax, NPNotAnyArgMax)),
+        # ('ft1d-fig-8.png',
+        #         'first_true_1d() Performance with PyArray_DATA() and memcmp()',
+        #         (AKFirstTruePtr, AKFirstTruePtrUnroll, AKFirstTrueMemcmp, NPArgMax, NPNotAnyArgMax)),
+        ('ft1d-fig-9.png',
+                'first_true_1d() Performance (Log scale)',
+                (AKFirstTrueGetitem,
+                 AKFirstTrueScalar,
+                 AKFirstTrueGetptr,
+                 AKFirstTrueNpyiter,
+                 AKFirstTruePtr,
+                 AKFirstTruePtrUnroll,
+                 AKFirstTrueMemcmp,
+                 NPArgMax,
+                 NPNotAnyArgMax,
+                 NPNonZero)),
+
     ):
         run_test(sizes=SIZES,
                 fixtures=CLS_FF,
                 processors=processors,
                 fp=directory / fn,
                 title=title,
-                number=50,
+                number=5,
                 )
 
 
