@@ -45,7 +45,7 @@ Creator of StaticFrame, an alternative DataFrame library
 ---
 layout: center
 ---
-# A passion for performance
+# A passion for Python performance
 
 
 ---
@@ -91,7 +91,8 @@ Many NumPy routines do more than we need
     - Handle N-dimensional arrays
     - Handle full diversity of dtypes
     - Handle non-array (i.e., list, tuple) inputs
-- More narrow routines might be able to out-perform flexible routines
+- Flexibility has a performance cost
+- More narrow routines might be more efficient
 
 </v-clicks>
 </Transform>
@@ -1059,7 +1060,15 @@ layout: center
 
 Single instruction, multiple data (SIMD) instructions
 
-... via CPU dispatch `NPY_CPU_DISPATCH_CALL_XB`
+SSE SIMD on x86-64 has 128 bit registers
+
+16 1-byte Booleans can be processed in one instruction
+
+AVX-512 permits processing 512 bit registers
+
+True vectorization
+
+CPU dispatching permits usage when available
 </v-clicks>
 </Transform>
 
@@ -1069,7 +1078,7 @@ Single instruction, multiple data (SIMD) instructions
 # NumPy SIMD `BOOL_argmax`
 <Transform :scale="0.8">
 
-```c {all|1-3,25|4-7|8,23|9-12|13-16|17-18|19-24}
+```c {all|1-3,25|4-7|8,23|9-19|20-22,24}
 NPY_NO_EXPORT int NPY_CPU_DISPATCH_CURFX(BOOL_argmax)
 (npy_bool *ip, npy_intp len, npy_intp *mindx, PyArrayObject *NPY_UNUSED(aip))
 {
@@ -1104,6 +1113,31 @@ numpy/core/src/_simd/_simd_inc.h.src
 // convert boolean vector to integer bitfield
 NPY_FINLINE npy_uint64 npyv_tobits_b8(npyv_b8 a)
  -->
+
+
+---
+---
+# NumPy SIMD `BOOL_argmax`
+<Transform :scale="1.4">
+
+```c {all|1-4|5-8|9-10|11-14}
+npyv_u8 a = npyv_load_u8(ip + i + vstep*0);
+npyv_u8 b = npyv_load_u8(ip + i + vstep*1);
+npyv_u8 c = npyv_load_u8(ip + i + vstep*2);
+npyv_u8 d = npyv_load_u8(ip + i + vstep*3);
+npyv_b8 m_a = npyv_cmpeq_u8(a, zero);
+npyv_b8 m_b = npyv_cmpeq_u8(b, zero);
+npyv_b8 m_c = npyv_cmpeq_u8(c, zero);
+npyv_b8 m_d = npyv_cmpeq_u8(d, zero);
+npyv_b8 m_ab = npyv_and_b8(m_a, m_b);
+npyv_b8 m_cd = npyv_and_b8(m_c, m_d);
+npy_uint64 m = npyv_tobits_b8(npyv_and_b8(m_ab, m_cd));
+if ((npy_int64)m != ((1LL << vstep) - 1)) { // if not all zero
+    break;
+}
+```
+</Transform>
+
 
 ---
 ---
