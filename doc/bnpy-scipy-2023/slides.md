@@ -43,6 +43,12 @@ Creator of StaticFrame, an alternative DataFrame library
 
 
 ---
+layout: center
+---
+# A passion for performance
+
+
+---
 ---
 # Python Performance
 
@@ -60,28 +66,12 @@ With NumPy, we get C-typed arrays in Python
 
 ---
 ---
-# Optimizing Python and NumPy Usage
+# Can NumPy Routines be Optimized?
 
 <Transform :scale="1.5">
 <v-clicks>
 
 Even with NumPy, performance opportunities remain
-
-Custom NumPy array builders (`delimited_to_arrays()`)
-
-Replacing non-array `PyObject` usage with C-types (`BlockIndex`)
-
-What about NumPy routines?
-</v-clicks>
-</Transform>
-
-
----
----
-# Can NumPy Routines be Optimized?
-
-<Transform :scale="1.5">
-<v-clicks>
 
 Some NumPy routines are implemented in Python
 
@@ -113,6 +103,8 @@ Many NumPy routines do more than we need
 
 <Transform :scale="1.5">
 <v-clicks>
+
+A utility that was needed for StaticFrame
 
 1D Boolean array: find the index of the first `True`
 
@@ -164,14 +156,15 @@ div {background-color: #666;}
 
 ---
 ---
-# Finding the First True with NumPy
+# Finding the First `True` with NumPy
 
 <Transform :scale="1.5">
-<v-clicks>
+<v-clicks depth="2">
 
-`np.argmax()`
-
-`np.nonzero()`
+- No NumPy function does just what we need
+- Two options are close
+    - `np.argmax()`
+    - `np.nonzero()`
 </v-clicks>
 </Transform>
 
@@ -185,51 +178,33 @@ div {background-color: #666;}
 
 Return the index of the maximum value in an array
 
-Specialized for Boolean arrays to short-circuit
+If there are ties, the first index is returned
+
+Specialized for Boolean arrays to short-circuit on first `True`
 
 Returns `0` if all `False`
+
+Must call `np.any()` to discover all `False`
 </v-clicks>
 </Transform>
 
 
 ---
 ---
-# `np.argmax()` 1D
+# `np.argmax()`
 <Transform :scale="1.5">
 
-```python {all|1|1-3|4|4-6}
+```python {all|1|1-3|4-5|6-7}
 >>> array = np.arange(10_000) == 2_000
 >>> np.argmax(array) # finds first True
 2000
->>> array = np.full(10_000, False)
->>> np.argmax(array) # if all False, reports 0
+>>> np.argmax(np.full(10_000, False)) # if all False, reports 0
+0
+>>> np.argmax(np.array([True, False])) # if True at index 0
 0
 ```
 </Transform>
 
-
----
----
-# `np.argmax()` 2D
-<Transform :scale="1.5">
-
-```python {all|1|1-6|7-8|9-10}
->>> array = np.arange(24).reshape(4,6) % 5 == 0
->>> array
-array([[ True, False, False, False, False,  True],
-       [False, False, False, False,  True, False],
-       [False, False, False,  True, False, False],
-       [False, False,  True, False, False, False]])
->>> np.argmax(array, axis=0) # evaluate columns
-array([0, 0, 3, 2, 1, 0])
->>> np.argmax(array, axis=1) # evaluate rows
-array([0, 4, 3, 2])
-
-```
-</Transform>
-<!--
-Notice that we get the same result for column 0 and column 1 as all False returns 0
--->
 
 ---
 ---
@@ -249,7 +224,7 @@ Cannot short-circuit
 
 ---
 ---
-# `np.nonzero()` 1D
+# `np.nonzero()`
 <Transform :scale="1.5">
 
 ```python {all|1|1-3|1-5|6|6-8|6-10} {lines:false}
@@ -268,32 +243,9 @@ Cannot short-circuit
 
 
 ---
----
-# `np.nonzero()` 2D
-<Transform :scale="1.5">
-
-```python {all|1|1-6|7-8|9-10}
->>> array = np.arange(24).reshape(4,6) % 5 == 0
->>> array
-array([[ True, False, False, False, False,  True],
-       [False, False, False, False,  True, False],
-       [False, False, False,  True, False, False],
-       [False, False,  True, False, False, False]])
->>> np.nonzero(array) # we get an array per dimension
-(array([0, 0, 1, 2, 3]), array([0, 5, 4, 3, 2]))
->>> [array[x, y] for x, y in zip(*np.nonzero(array))]
-[True, True, True, True, True]
-```
-</Transform>
-<!--
-Notice that we have read through these coordinates to discover the first true per axis
--->
-
-
----
 layout: center
 ---
-# Performance of `np.argmax()` and `np.nonzero()`
+# Performance of `np.argmax()` (with `np.any()`) and `np.nonzero()`
 
 
 ---
@@ -395,27 +347,9 @@ I will favor writing C-Extensions using the CPython C-API and NumPy C-API
 
 Core routine can be done without `PyObject`s
 
-Can operate directly on a C array.
+Can operate directly on a C array
 
-Can return a `PyObject` or NumPy array
-</v-clicks>
-</Transform>
-
-
----
----
-# Writing Python C-Extensions
-
-<Transform :scale="1.5">
-<v-clicks>
-
-Custom types are hard
-
-Single functions are straightforward
-
-Python, NumPy C-APIs are reasonably well documented
-
-Must do cross-platform testing in CI (`cibuildwheel`)
+Finding the first `True` in a C array is a good candidate
 </v-clicks>
 </Transform>
 
@@ -427,7 +361,7 @@ Must do cross-platform testing in CI (`cibuildwheel`)
 <Transform :scale="1.5">
 <v-clicks depth="2">
 
-- Two Arguments
+- A Function with Two Arguments
     - NumPy array
     - A Boolean (`True` for forward, `False` for reverse)
 - Evaluate elements, return the index of the first `True`

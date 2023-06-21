@@ -232,8 +232,10 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
             data_ptr += stride;
         }
     } while(iter_next(iter));
+    NpyIter_Deallocate(iter);
     return PyLong_FromSsize_t(-1);
 end:
+    NpyIter_Deallocate(iter);
     return PyLong_FromSsize_t(i);
 }
 
