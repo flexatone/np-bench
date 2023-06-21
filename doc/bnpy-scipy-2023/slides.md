@@ -1482,6 +1482,25 @@ div {background-color: #fff;}
 ---
 layout: center
 ---
+# The big picture
+
+
+
+---
+layout: none
+---
+<div class="absolute top-0px">
+<img src="/ft1d-fig-9.png" style="height: 550px;" />
+</div>
+
+<style>
+div {background-color: #fff;}
+</style>
+
+
+---
+layout: center
+---
 # What about 2D?
 
 
@@ -1549,7 +1568,7 @@ div {background-color: #fff;}
 
 <Transform :scale="1.5">
 
-Sli.dev slides
+Sli.dev slide toolkit
 
 Code: https://github.com/flexatone/np-bench
 

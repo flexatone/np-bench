@@ -56,7 +56,7 @@ class AKFirstTruePtr(ArrayProcessor):
         _ = first_true_1d_ptr(self.array, True)
 
 class AKFirstTruePtrUnroll(ArrayProcessor):
-    NAME = 'first_true_1d_ptr_unroll()'
+    NAME = 'first_true_1d_unroll()'
     SORT = 5
 
     def __call__(self):
