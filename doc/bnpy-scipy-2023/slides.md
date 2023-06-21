@@ -21,7 +21,7 @@ h1 {font-size: 1.5em;}
 
 
 ---
----
+
 # About Me
 
 <Transform :scale="1.5">
@@ -1207,7 +1207,7 @@ Advance through array with pointer arithmetic, unrolling units of 4
 ---
 ---
 # V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
-<Transform :scale="1.1">
+<Transform :scale="1.0">
 
 ```c {all|1-3,18|4|5-8|9-12|13-16|17}
 static PyObject*
