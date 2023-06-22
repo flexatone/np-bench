@@ -45,7 +45,7 @@ Creator of StaticFrame, an alternative DataFrame library
 ---
 layout: center
 ---
-# A passion for performance
+# Performance of Python routines
 
 
 ---
@@ -53,13 +53,15 @@ layout: center
 # Python Performance
 
 <Transform :scale="1.5">
-<v-clicks>
+<v-clicks depth="2">
 
-Python (using C `PyObject`s) is relatively slow
-
-C-extensions using C-types are fast
-
-With NumPy, we get C-typed arrays in Python
+- Python is relatively slow
+    - All values are "boxed" in C `PyObject`s
+    - Values not in contiguous memory
+    - Must manage reference counts
+- C-extensions using C-types are fast
+- With NumPy, we get C-typed arrays in Python
+- NumPy is fast
 </v-clicks>
 </Transform>
 
@@ -70,8 +72,6 @@ With NumPy, we get C-typed arrays in Python
 
 <Transform :scale="1.5">
 <v-clicks>
-
-Even with NumPy, performance opportunities remain
 
 Some NumPy routines are implemented in Python
 
@@ -90,6 +90,7 @@ Many NumPy routines do more than we need
 - NumPy routines are flexible
     - Handle N-dimensional arrays
     - Handle full diversity of dtypes
+    - Support diverse array memory layouts (non-contiguous memory)
     - Handle non-array (i.e., list, tuple) inputs
 - More narrow routines might be able to out-perform flexible routines
 
@@ -264,10 +265,9 @@ div {background-color: #fff;}
 ---
 # Performance Panels
 
-<Transform :scale="1.2">
+<Transform :scale="1.5">
 <v-clicks depth="2">
 
-- Bars in a plot are implementations (numbered and labelled in the legend)
 - Rows are Boolean array size (1e5, 1e6, 1e7)
 - Four columns show different fill characteristics
     - One `True`
@@ -297,19 +297,17 @@ div {background-color: #fff;}
 ---
 # Opportunities for Improvement
 
-<Transform :scale="1.2">
+<Transform :scale="1.5">
 <v-clicks depth="2">
 
-- `np.argmax`:
-    - All-`False` can be handled with `np.any()`
-    - Worst case Requires two iterations, but can short-circuit
+- `np.argmax`
+    - Must call `np.any()` to discover all-`False`
+    - Worst case requires two iterations, but can short-circuit
     - Does not search in reverse
 - `np.nonzero`
-    - Always requires one iteration, cannot short-circuit
+    - Requires one full iteration (cannot short-circuit)
     - Collects more than we need
     - Must iterate over results to find first or last
-- Both options seem suboptimal
-
 </v-clicks>
 </Transform>
 
@@ -348,8 +346,6 @@ I will favor writing C-Extensions using the CPython C-API and NumPy C-API
 Core routine can be done without `PyObject`s
 
 Can operate directly on a C array
-
-Finding the first `True` in a C array is a good candidate
 </v-clicks>
 </Transform>
 
@@ -361,10 +357,10 @@ Finding the first `True` in a C array is a good candidate
 <Transform :scale="1.5">
 <v-clicks depth="2">
 
-- A Function with Two Arguments
+- A function with two arguments
     - NumPy array
     - A Boolean (`True` for forward, `False` for reverse)
-- Evaluate elements, return the index of the first `True`
+- Evaluate each element, return the index of the first `True`
 - If no `True`, return `-1`
 - Code: https://github.com/flexatone/np-bench
 
@@ -381,6 +377,7 @@ layout: center
 ---
 ---
 # A Minimal C Extension Module `np_bench`
+<Transform :scale="1.1">
 
 ```c {all|1-5|6-8,17|9|10-16}
 static struct PyModuleDef npb_module = {
@@ -401,11 +398,13 @@ PyInit_np_bench(void)
     return m;
 }
 ```
+</Transform>
 
 
 ---
 ---
 # A C Function as a Module-Level Python Function
+<Transform :scale="1.1">
 
 ```c {all|1-3,14|4-5|6-11|12-13}
 static PyObject*
@@ -423,6 +422,8 @@ first_true_1d(PyObject *Py_UNUSED(m), PyObject *args)
     return PyLong_FromSsize_t(-1);
 }
 ```
+</Transform>
+
 
 ---
 ---
@@ -492,20 +493,13 @@ Must manage reference counts for `PyObject`s
 ---
 ---
 # I: Reading Native `PyObject`s From Arrays
-
 <Transform :scale="1.1">
-```c {all|1-3,17|4-5|6-11|12-16}
+
+```c {all|1-3,10|4|5-8|9}
 static PyObject*
 first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 {
-    PyArrayObject *array = NULL;
-    int forward = 1;
-    if (!PyArg_ParseTuple(args,
-            "O!p:first_true_1d_getitem",
-            &PyArray_Type, &array,
-            &forward)) {
-        return NULL;
-    }
+    // ... parse args
     if (PyArray_NDIM(array) != 1) {
         PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
         return NULL;
@@ -519,8 +513,8 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 ---
 # I: Reading Native `PyObject`s From Arrays
-
 <Transform :scale="1.1">
+
 ```c {all|1-3|4,13|5,12|6|7-11}
     npy_intp size = PyArray_SIZE(array);
     npy_intp i;
@@ -541,7 +535,6 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 ---
 ---
 # I: Reading Native `PyObject`s From Arrays
-
 <Transform :scale="1.1">
 
 ```c {all|1,10|2,9|3|4-8|11-14}
@@ -684,7 +677,7 @@ div {background-color: #fff;}
 ---
 layout: center
 ---
-# Avoiding `PyObject`s entirely
+# Use C types instead of `PyObject`s
 
 
 ---
@@ -694,7 +687,7 @@ layout: center
 <Transform :scale="1.5">
 <v-clicks>
 
-Only process 1D, Boolean arrays
+Only process 1D, *Boolean* arrays
 
 Use `PyArray_GETPTR1()` and cast to C type
 
@@ -797,7 +790,7 @@ div {background-color: #fff;}
 ---
 layout: center
 ---
-# Other options with the NumPy C API
+# Other options within the NumPy C API
 
 
 ---
@@ -807,11 +800,11 @@ layout: center
 <Transform :scale="1.5">
 <v-clicks>
 
-Requires `NpyIter_New()` and related library functions
+`NpyIter` provides common iteration interface in C
 
-Generality for N-dimensional arrays of diverse homogeneity
+Supports all dimensionalities, dtypes, memory layouts
 
-Perform stride-sized pointer arithmetic in inner loop
+Performs stride-sized pointer arithmetic in inner loop
 
 Requires more code
 
@@ -985,7 +978,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
     npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
     npy_intp size = PyArray_SIZE(array);
-    Py_ssize_t position = -1;
+    Py_ssize_t i = -1;
     npy_bool *p;
     npy_bool *p_end;
 
@@ -1020,9 +1013,9 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
         }
     }
     if (p != p_end) {
-        position = p - array_buffer;
+        i = p - array_buffer;
     }
-    return PyLong_FromSsize_t(position);
+    return PyLong_FromSsize_t(i);
 ```
 </Transform>
 
@@ -1179,7 +1172,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
     npy_intp size = PyArray_SIZE(array);
     lldiv_t size_div = lldiv((long long)size, 4); // unroll 4 iterations
 
-    Py_ssize_t position = -1;
+    Py_ssize_t i = -1;
     npy_bool *p;
     npy_bool *p_end;
 ```
@@ -1250,9 +1243,9 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 
 ```c {all}
     if (p != p_end) {
-        position = p - array_buffer;
+        i = p - array_buffer;
     }
-    return PyLong_FromSsize_t(position);
+    return PyLong_FromSsize_t(i);
 ```
 </Transform>
 

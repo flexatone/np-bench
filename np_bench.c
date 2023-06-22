@@ -223,7 +223,6 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
         data_ptr = *data_ptr_array;
         stride = *stride_ptr;
         inner_size = *inner_size_ptr;
-
         while (inner_size--) {
             if (*data_ptr) {
                 goto exit;
@@ -270,7 +269,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
     npy_intp size = PyArray_SIZE(array);
     npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
-    Py_ssize_t position = -1;
+    Py_ssize_t i = -1;
     npy_bool *p;
     npy_bool *p_end;
 
@@ -291,10 +290,10 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
         }
     }
     if (p != p_end) {
-        position = p - array_buffer;
+        i = p - array_buffer;
     }
 
-    return PyLong_FromSsize_t(position);
+    return PyLong_FromSsize_t(i);
 }
 
 
@@ -332,7 +331,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
     NPY_BEGIN_THREADS_DEF;
     NPY_BEGIN_THREADS;
 
-    Py_ssize_t position = -1;
+    Py_ssize_t i = -1;
     npy_bool *p;
     npy_bool *p_end;
 
@@ -374,11 +373,11 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
         }
     }
     if (p != p_end) {
-        position = p - array_buffer;
+        i = p - array_buffer;
     }
     NPY_END_THREADS;
 
-    return PyLong_FromSsize_t(position);
+    return PyLong_FromSsize_t(i);
 }
 
 #define MEMCMP_SIZE 8
