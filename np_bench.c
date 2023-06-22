@@ -226,15 +226,16 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
 
         while (inner_size--) {
             if (*data_ptr) {
-                goto end;
+                goto exit;
             }
             i++;
             data_ptr += stride;
         }
     } while(iter_next(iter));
-    NpyIter_Deallocate(iter);
-    return PyLong_FromSsize_t(-1);
-end:
+    if (i == PyArray_SIZE(array)) {
+        i = -1;
+    }
+exit:
     NpyIter_Deallocate(iter);
     return PyLong_FromSsize_t(i);
 }

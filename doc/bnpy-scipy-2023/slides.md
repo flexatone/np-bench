@@ -807,7 +807,7 @@ layout: center
 <Transform :scale="1.5">
 <v-clicks>
 
-Use `NpyIter_New()` to setup iteration
+Requires `NpyIter_New()` and related library functions
 
 Generality for N-dimensional arrays of diverse homogeneity
 
@@ -892,22 +892,24 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
 # IV: Using `NpyIter`
 <Transform :scale="1.1">
 
-```c {all|1,13|2-4|6,12|7-9,15-16|10-11|14}
+```c {all|1,12|2-4|5,11|6-8,16-18|9-10|13-18}
     do {
         data_ptr = *data_ptr_array;
         stride = *stride_ptr;
         inner_size = *inner_size_ptr;
-
         while (inner_size--) {
             if (*data_ptr) {
-                goto end;
+                goto exit;
             }
             i++;
             data_ptr += stride;
         }
     } while(iter_next(iter));
-    return PyLong_FromSsize_t(-1);
-end:
+    if (i == PyArray_SIZE(array)) {
+        i = -1;
+    }
+exit:
+    NpyIter_Deallocate(iter);
     return PyLong_FromSsize_t(i);
 ```
 </Transform>
