@@ -461,13 +461,13 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 
 
 static PyObject*
-first_true_1d_intcmp(PyObject *Py_UNUSED(m), PyObject *args)
+first_true_1d_uintcmp(PyObject *Py_UNUSED(m), PyObject *args)
 {
     PyArrayObject *array = NULL;
     int forward = 1;
 
     if (!PyArg_ParseTuple(args,
-            "O!p:first_true_1d_intcmp",
+            "O!p:first_true_1d_uintcmp",
             &PyArray_Type, &array,
             &forward)) {
         return NULL;
@@ -894,7 +894,7 @@ static PyMethodDef npb_methods[] =  {
     {"first_true_1d_ptr", (PyCFunction)first_true_1d_ptr, METH_VARARGS, NULL},
     {"first_true_1d_ptr_unroll", (PyCFunction)first_true_1d_ptr_unroll, METH_VARARGS, NULL},
     {"first_true_1d_memcmp", (PyCFunction)first_true_1d_memcmp, METH_VARARGS, NULL},
-    {"first_true_1d_intcmp", (PyCFunction)first_true_1d_intcmp, METH_VARARGS, NULL},
+    {"first_true_1d_uintcmp", (PyCFunction)first_true_1d_uintcmp, METH_VARARGS, NULL},
     {"first_true_2d_unroll",
             (PyCFunction)first_true_2d_unroll,
             METH_VARARGS | METH_KEYWORDS,

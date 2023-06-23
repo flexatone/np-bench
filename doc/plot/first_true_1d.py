@@ -11,7 +11,7 @@ from np_bench import first_true_1d_getptr
 from np_bench import first_true_1d_ptr
 from np_bench import first_true_1d_ptr_unroll
 from np_bench import first_true_1d_memcmp
-from np_bench import first_true_1d_intcmp
+from np_bench import first_true_1d_uintcmp
 
 sys.path.append(os.getcwd())
 
@@ -71,12 +71,12 @@ class AKFirstTrueMemcmp(ArrayProcessor):
         _ = first_true_1d_memcmp(self.array, True)
 
 
-class AKFirstTrueIntcmp(ArrayProcessor):
-    NAME = 'first_true_1d_intcmp()'
+class AKFirstTrueUintcmp(ArrayProcessor):
+    NAME = 'first_true_1d_scan()'
     SORT = 7
 
     def __call__(self):
-        _ = first_true_1d_intcmp(self.array, True)
+        _ = first_true_1d_uintcmp(self.array, True)
 
 
 
@@ -107,7 +107,7 @@ class NPArgMax(ArrayProcessor):
         _ = np.argmax(self.array)
 
 class NPNotAnyArgMax(ArrayProcessor):
-    NAME = 'np.any(), np.argmax()'
+    NAME = 'np.argmax()+np.any()'
     SORT = 20
 
     def __call__(self):
@@ -236,34 +236,34 @@ if __name__ == '__main__':
     directory = Path('doc/bnpy-scipy-2023/public')
 
     for fn, title, processors in (
-        # ('ft1d-fig-0.png',
-        #         'np.nonzero(), np.argmax() Performance',
-        #         (NPNonZero, NPNotAnyArgMax)),
-        # ('ft1d-fig-1.png',
-        #         'first_true_1d() Performance with PyArray_GETITEM()',
-        #         (AKFirstTrueGetitem, NPNonZero, NPNotAnyArgMax)),
+        ('ft1d-fig-0.png',
+                'np.nonzero(), np.argmax() Performance',
+                (NPNonZero, NPNotAnyArgMax)),
+        ('ft1d-fig-1.png',
+                'first_true_1d() Performance with PyArray_GETITEM()',
+                (AKFirstTrueGetitem, NPNonZero, NPNotAnyArgMax)),
         # ('ft1d-fig-2.png',
         #         'first_true_1d() Performance with PyArray_ToScalar()',
         #         (AKFirstTrueGetitem, AKFirstTrueScalar, NPNonZero, NPNotAnyArgMax)),
-        # ('ft1d-fig-3.png',
-        #         'first_true_1d() Performance with PyArray_GETPTR1()',
-        #         (AKFirstTrueGetitem, AKFirstTrueScalar, AKFirstTrueGetptr, NPNonZero, NPNotAnyArgMax)),
-        # ('ft1d-fig-4.png',
-        #         'first_true_1d() Performance with PyArray_GETPTR1()',
-        #         (AKFirstTrueGetptr, NPNonZero, NPNotAnyArgMax)),
-        # ('ft1d-fig-5.png',
-        #         'first_true_1d() Performance with NpyIter',
-        #         (AKFirstTrueGetptr, AKFirstTrueNpyiter, NPNonZero, NPNotAnyArgMax)),
-        # ('ft1d-fig-6.png',
-        #         'first_true_1d() Performance with PyArray_DATA()',
-        #         (AKFirstTrueGetptr, AKFirstTruePtr, NPNonZero, NPNotAnyArgMax)),
-        # ('ft1d-fig-7.png',
-        #         'first_true_1d() Performance with PyArray_DATA() with Loop Unrolling',
-        #         (AKFirstTrueGetptr, AKFirstTruePtr, AKFirstTruePtrUnroll, NPNonZero, NPNotAnyArgMax)),
-        # ('ft1d-fig-8.png',
-        #         'first_true_1d() Performance with PyArray_DATA() and memcmp()',
-        #         (AKFirstTruePtr, AKFirstTruePtrUnroll, AKFirstTrueMemcmp, NPArgMax, NPNotAnyArgMax)),
-        ('ft1d-fig-9.png',
+        ('ft1d-fig-3.png',
+                'first_true_1d() Performance with PyArray_GETPTR1()',
+                (AKFirstTrueGetitem, AKFirstTrueGetptr, NPNonZero, NPNotAnyArgMax)),
+        ('ft1d-fig-4.png',
+                'first_true_1d() Performance with PyArray_GETPTR1()',
+                (AKFirstTrueGetptr, NPNonZero, NPNotAnyArgMax)),
+        ('ft1d-fig-5.png',
+                'first_true_1d() Performance with NpyIter',
+                (AKFirstTrueGetptr, AKFirstTrueNpyiter, NPNonZero, NPNotAnyArgMax)),
+        ('ft1d-fig-6.png',
+                'first_true_1d() Performance with PyArray_DATA()',
+                (AKFirstTrueGetptr, AKFirstTruePtr, NPNonZero, NPNotAnyArgMax)),
+        ('ft1d-fig-7.png',
+                'first_true_1d() Performance with PyArray_DATA() with Loop Unrolling',
+                (AKFirstTrueGetptr, AKFirstTruePtr, AKFirstTruePtrUnroll, NPNonZero, NPNotAnyArgMax)),
+        ('ft1d-fig-8.png',
+                'first_true_1d() Performance with PyArray_DATA() and Forward Scan()',
+                (AKFirstTruePtr, AKFirstTruePtrUnroll, AKFirstTrueUintcmp, NPNonZero, NPNotAnyArgMax)),
+        # ('ft1d-fig-9.png',
                 'first_true_1d() Performance (Log scale)',
                 (AKFirstTrueGetitem,
                 #  AKFirstTrueScalar,
@@ -271,9 +271,9 @@ if __name__ == '__main__':
                  AKFirstTrueNpyiter,
                  AKFirstTruePtr,
                  AKFirstTruePtrUnroll,
-                 AKFirstTrueMemcmp,
-                 AKFirstTrueIntcmp,
-                 NPArgMax,
+                #  AKFirstTrueMemcmp,
+                 AKFirstTrueUintcmp,
+                #  NPArgMax,
                  NPNotAnyArgMax,
                  NPNonZero)),
 
@@ -283,7 +283,7 @@ if __name__ == '__main__':
                 processors=processors,
                 fp=directory / fn,
                 title=title,
-                number=100,
+                number=1000,
                 )
 
 
