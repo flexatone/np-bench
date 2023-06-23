@@ -1,0 +1,3 @@
+to launch slides in this dir use `npx slidev`
+
+
