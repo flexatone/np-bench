@@ -1197,9 +1197,8 @@ div {background-color: #fff;}
 <v-clicks depth="2">
 
 - SIMD used to look ahead for `True`
-- Use `memcmp()`
-    - Compare raw memory to zero array buffer
-    - `memcmp()` might use SIMD
+- Use `memcmp()` compare raw memory to zero array buffer
+- Can cast 8 bytes of memory to `npy_uint64` and compare to `0`
 
 </v-clicks>
 </Transform>
@@ -1207,7 +1206,7 @@ div {background-color: #fff;}
 
 ---
 ---
-# IV(c.): Using C-Arrays, `memcmp()` Scan
+# IV(c.): Using C-Arrays, Forward Scan
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -1216,7 +1215,7 @@ Only process 1D, Boolean, contiguous arrays
 
 Use `PyArray_DATA()` to get C-array
 
-Lookhead in units of 8 bytes
+Forward scanning in units of 8 bytes
 
 Less code than loop unrolling
 </v-clicks>
@@ -1225,11 +1224,10 @@ Less code than loop unrolling
 
 ---
 ---
-# IV(c.): Using C-Arrays, `memcmp()` Scan
+# IV(c.): Using C-Arrays, Forward Scan
 <Transform :scale="1.1">
 
 ```c {all|1|2-4,19|5|6-9|10-13|14-17|18}
-#define MEMCMP_SIZE 8
 static PyObject*
 first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -1255,15 +1253,15 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# IV(c.): Using C-Arrays, `memcmp()` Scan
+# IV(c.): Using C-Arrays, Forward Scan
 <Transform :scale="1.1">
 
 ```c {all|1|2|4-5|7-9}
-    static npy_bool zero_buffer[MEMCMP_SIZE] = {0};
+    npy_intp lookahead = sizeof(npy_uint64);
     npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
     npy_intp size = PyArray_SIZE(array);
-    lldiv_t size_div = lldiIv((long long)size, MEMCMP_SIZE); // quot, rem
+    lldiv_t size_div = lldiv((long long)size, lookahead); // quot, rem
 
     Py_ssize_t position = -1;
     npy_bool *p;
@@ -1274,7 +1272,7 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# IV(c.): Using C-Arrays, `memcmp()` Scan
+# IV(c.): Using C-Arrays, Forward Scan
 <Transform :scale="1.1">
 
 ```c {all|1,14|2-3|4,9|5-8|10-13}
@@ -1282,10 +1280,10 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
         p = array_buffer;
         p_end = p + size;
         while (p < p_end - size_div.rem) {
-            if (memcmp(p, zero_buffer, MEMCMP_SIZE) != 0) {
+            if (*(npy_uint64*)p != 0) {
                 break;
             }
-            p += MEMCMP_SIZE;
+            p += lookahead;
         }
         while (p < p_end) {
             if (*p) {break;}
@@ -1297,7 +1295,7 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# IV(c.): Using C-Arrays, `memcmp()` Scan
+# IV(c.): Using C-Arrays, Forward Scan
 <Transform :scale="1.1">
 
 ```c {all|1,14|2-3|4,9|5-8|10-13|15-18}
@@ -1305,10 +1303,10 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
         p = array_buffer + size - 1;
         p_end = array_buffer - 1;
         while (p > p_end + size_div.rem) {
-            if (memcmp(p - MEMCMP_SIZE + 1, zero_buffer, MEMCMP_SIZE) != 0) {
+            if (*(npy_uint64*)(p - lookahead + 1) != 0) {
                 break;
             }
-            p -= MEMCMP_SIZE;
+            p -= lookahead;
         }
         while (p > p_end) {
             if (*p) {break;}

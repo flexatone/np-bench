@@ -380,7 +380,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
     return PyLong_FromSsize_t(i);
 }
 
-#define MEMCMP_SIZE 8
+#define MEMCMP_SIZE 8 // 8 bytes, 64 bits
 static PyObject*
 first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -486,11 +486,12 @@ first_true_1d_intcmp(PyObject *Py_UNUSED(m), PyObject *args)
         return NULL;
     }
 
+    npy_intp lookahead = sizeof(npy_uint64);
+    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
     npy_intp size = PyArray_SIZE(array);
-    lldiv_t size_div = lldiv((long long)size, sizeof(npy_uint64)); // quot, rem
+    lldiv_t size_div = lldiv((long long)size, lookahead); // quot, rem
 
-    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
     NPY_BEGIN_THREADS_DEF;
     NPY_BEGIN_THREADS;
@@ -507,7 +508,7 @@ first_true_1d_intcmp(PyObject *Py_UNUSED(m), PyObject *args)
             if (*(npy_uint64*)p != 0) {
                 break;
             } // found a true
-            p += sizeof(npy_uint64);
+            p += lookahead;
         }
         while (p < p_end) {
             if (*p) {break;}
@@ -518,10 +519,10 @@ first_true_1d_intcmp(PyObject *Py_UNUSED(m), PyObject *args)
         p = array_buffer + size - 1;
         p_end = array_buffer - 1;
         while (p > p_end + size_div.rem) {
-            if (*(npy_uint64*)(p - MEMCMP_SIZE + 1) != 0) {
+            if (*(npy_uint64*)(p - lookahead + 1) != 0) {
                 break;
             }
-            p -= sizeof(npy_uint64);
+            p -= lookahead;
         }
         while (p > p_end) {
             if (*p) {break;}
