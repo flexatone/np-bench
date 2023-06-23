@@ -325,7 +325,7 @@ Return -1 when all `False`
 <Transform :scale="1.5">
 <v-clicks>
 
-C-Extensions
+C extensions
 
 Cython / Numba
 
@@ -457,7 +457,6 @@ layout: center
 <v-clicks>
 
 1. Reading Native `PyObject`s From Arrays (``PyArray_GETITEM``)
-1. Reading NumPy Scalar `PyObject`s From Arrays (``PyArray_ToScalar``)
 1. Casting Data Pointers to C-Types (``PyArray_GETPTR1``)
 1. Using `NpyIter`
 1. Using C-Arrays and Pointer Arithmetic (``PyArray_DATA()``)
@@ -568,112 +567,6 @@ div {background-color: #fff;}
 </style>
 
 
----
-layout: center
----
-# What about NumPy scalars?
-
-
----
----
-# II: Reading NumPy Scalar `PyObject`s From Arrays
-
-<Transform :scale="1.5">
-<v-clicks>
-
-Only process 1D arrays
-
-Use `PyArray_GETPTR1()` to get pointer to element
-
-Use `PyArray_ToScalar()` to build NumPy scalar `PyObject`
-
-Can continue to use `PyObject_IsTrue()` to evaluate elements
-
-Must manage reference counting for `PyObject`s
-</v-clicks>
-</Transform>
-
-
-
----
----
-# II: Reading NumPy Scalar `PyObject`s From Arrays
-
-<Transform :scale="1.1">
-
-```c {all|1-3,10|4|5-8|9}
-static PyObject*
-first_true_1d_scalar(PyObject *Py_UNUSED(m), PyObject *args)
-{
-    // ... parse args
-    if (PyArray_NDIM(array) != 1) {
-        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
-        return NULL;
-    }
-    // ... implementation
-}
-```
-</Transform>
-
-
----
----
-# II: Reading NumPy Scalar `PyObject`s From Arrays
-<Transform :scale="1.2">
-
-```c {all|1-3|5,14|6,13|7|8-12}
-    npy_intp size = PyArray_SIZE(array);
-    npy_intp i;
-    PyObject* scalar;
-
-    if (forward) {
-        for (i = 0; i < size; i++) {
-            scalar = PyArray_ToScalar(PyArray_GETPTR1(array, i), array);
-            if(PyObject_IsTrue(scalar)) {
-                Py_DECREF(scalar);
-                break;
-            }
-            Py_DECREF(scalar);
-        }
-    }
-```
-</Transform>
-
----
----
-# II: Reading NumPy Scalar `PyObject`s From Arrays
-<Transform :scale="1.1">
-
-```c {all|1,10|2,9|3|4-8|11-14}
-    else {
-        for (i = size - 1; i >= 0; i--) {
-            scalar = PyArray_ToScalar(PyArray_GETPTR1(array, i), array);
-            if(PyObject_IsTrue(scalar)) {
-                Py_DECREF(scalar);
-                break;
-            }
-            Py_DECREF(scalar);
-        }
-    }
-    if (i < 0 || i >= size ) {
-        i = -1;
-    }
-    return PyLong_FromSsize_t(i);
-```
-</Transform>
-
-
----
-layout: none
----
-<div class="absolute top-0px">
-<img src="/ft1d-fig-2.png" style="height: 550px;" />
-</div>
-
-<style>
-div {background-color: #fff;}
-</style>
-
 
 ---
 layout: center
@@ -683,7 +576,7 @@ layout: center
 
 ---
 ---
-# III: Casting Data Pointers to C-Types
+# II: Casting Data Pointers to C-Types
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -701,7 +594,7 @@ Can release the GIL over core loop
 
 ---
 ---
-# III: Casting Data Pointers to C-Types
+# II: Casting Data Pointers to C-Types
 <Transform :scale="1.1">
 
 ```c {all|1-3,14|4|5-8|9-12|13}
@@ -725,7 +618,7 @@ first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# III: Casting Data Pointers to C-Types
+# II: Casting Data Pointers to C-Types
 <Transform :scale="1.1">
 
 ```c {all|1-2|4,10|5,9|6-8}
@@ -745,7 +638,7 @@ first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# III: Casting Data Pointers to C-Types
+# II: Casting Data Pointers to C-Types
 <Transform :scale="1.1">
 
 ```c {all|1,7|2,6|3-5|8-11}
@@ -796,7 +689,7 @@ layout: center
 
 ---
 ---
-# IV: Using `NpyIter`
+# III: Using `NpyIter`
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -816,7 +709,7 @@ Does not support reverse iteration
 
 ---
 ---
-# IV: Using `NpyIter`
+# III: Using `NpyIter`
 <Transform :scale="1.1">
 
 ```c {all|1-3,14|4|5-8|9-12|13}
@@ -840,7 +733,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# IV: Using `NpyIter`
+# III: Using `NpyIter`
 <Transform :scale="1.1">
 
 ```c {all|1-7|8-10|11-15}
@@ -864,7 +757,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# IV: Using `NpyIter`
+# III: Using `NpyIter`
 <Transform :scale="1.1">
 
 ```c {all|1-2|4-5|7-8|10}
@@ -883,7 +776,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# IV: Using `NpyIter`
+# III: Using `NpyIter`
 <Transform :scale="1.1">
 
 ```c {all|1,12|2-4|5,11|6-8,16-18|9-10|13-18}
@@ -929,7 +822,7 @@ layout: center
 
 ---
 ---
-# V(a.): Using C-Arrays and Pointer Arithmetic
+# IV(a.): Using C-Arrays and Pointer Arithmetic
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -945,7 +838,7 @@ Advance through array with pointer arithmetic
 
 ---
 ---
-# V(a.): Using C-Arrays and Pointer Arithmetic
+# IV(a.): Using C-Arrays and Pointer Arithmetic
 <Transform :scale="1.1">
 
 ```c {all|1-3,18|4|5-8|9-12|13-16|17}
@@ -972,7 +865,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(a.): Using C-Arrays and Pointer Arithmetic
+# IV(a.): Using C-Arrays and Pointer Arithmetic
 <Transform :scale="1.1">
 
 ```c {all|1|3-6|8,17|9,10|11,16|12-15}
@@ -999,7 +892,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(a.): Using C-Arrays and Pointer Arithmetic
+# IV(a.): Using C-Arrays and Pointer Arithmetic
 <Transform :scale="1.1">
 
 ```c {all|1,10|2-3|4,9|5-8|11-14}
@@ -1153,7 +1046,7 @@ if ((npy_int64)m != ((1LL << vstep) - 1)) { // if not all zero
 
 ---
 ---
-# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -1169,7 +1062,7 @@ Advance through array with pointer arithmetic, unrolling units of 4
 
 ---
 ---
-# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 <Transform :scale="1.0">
 
 ```c {all|1-3,18|4|5-8|9-12|13-16|17}
@@ -1197,14 +1090,14 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 <Transform :scale="1.1">
 
 ```c {all|1|3-4|6-9}
     npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
     npy_intp size = PyArray_SIZE(array);
-    lldiv_t size_div = lldiv((long long)size, 4); // unroll 4 iterations
+    lldiv_t size_div = lldiIv((long long)size, 4); // unroll 4 iterations
 
     Py_ssize_t i = -1;
     npy_bool *p;
@@ -1216,7 +1109,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 <Transform :scale="1.0">
 
 ```c {all|1,18|2-3|4,13|5-12|14,17|15-16}
@@ -1244,7 +1137,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 <Transform :scale="1.0">
 
 ```c {all|1,18|2-3|4,13|5-12|14,17|15-16}
@@ -1272,7 +1165,7 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
 <Transform :scale="1.1">
 
 ```c {all}
@@ -1314,7 +1207,7 @@ div {background-color: #fff;}
 
 ---
 ---
-# V(c.): Using C-Arrays, `memcmp()` Scan
+# IV(c.): Using C-Arrays, `memcmp()` Scan
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -1332,7 +1225,7 @@ Less code than loop unrolling
 
 ---
 ---
-# V(c.): Using C-Arrays, `memcmp()` Scan
+# IV(c.): Using C-Arrays, `memcmp()` Scan
 <Transform :scale="1.1">
 
 ```c {all|1|2-4,19|5|6-9|10-13|14-17|18}
@@ -1362,7 +1255,7 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(c.): Using C-Arrays, `memcmp()` Scan
+# IV(c.): Using C-Arrays, `memcmp()` Scan
 <Transform :scale="1.1">
 
 ```c {all|1|2|4-5|7-9}
@@ -1370,7 +1263,7 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
     npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
 
     npy_intp size = PyArray_SIZE(array);
-    lldiv_t size_div = lldiv((long long)size, MEMCMP_SIZE); // quot, rem
+    lldiv_t size_div = lldiIv((long long)size, MEMCMP_SIZE); // quot, rem
 
     Py_ssize_t position = -1;
     npy_bool *p;
@@ -1381,7 +1274,7 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(c.): Using C-Arrays, `memcmp()` Scan
+# IV(c.): Using C-Arrays, `memcmp()` Scan
 <Transform :scale="1.1">
 
 ```c {all|1,14|2-3|4,9|5-8|10-13}
@@ -1404,7 +1297,7 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# V(c.): Using C-Arrays, `memcmp()` Scan
+# IV(c.): Using C-Arrays, `memcmp()` Scan
 <Transform :scale="1.1">
 
 ```c {all|1,14|2-3|4,9|5-8|10-13|15-18}
@@ -1481,7 +1374,7 @@ div {background-color: #fff;}
 
 ---
 ---
-# Thanks!
+# Thank You
 
 <Transform :scale="1.5">
 

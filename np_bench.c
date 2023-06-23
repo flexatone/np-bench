@@ -459,6 +459,86 @@ first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 }
 
 
+
+static PyObject*
+first_true_1d_intcmp(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    PyArrayObject *array = NULL;
+    int forward = 1;
+
+    if (!PyArg_ParseTuple(args,
+            "O!p:first_true_1d_intcmp",
+            &PyArray_Type, &array,
+            &forward)) {
+        return NULL;
+    }
+
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+    if (!PyArray_IS_C_CONTIGUOUS(array)) {
+        PyErr_SetString(PyExc_ValueError, "Array must be contiguous");
+        return NULL;
+    }
+
+
+    npy_intp size = PyArray_SIZE(array);
+    lldiv_t size_div = lldiv((long long)size, sizeof(npy_uint64)); // quot, rem
+
+    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
+
+    NPY_BEGIN_THREADS_DEF;
+    NPY_BEGIN_THREADS;
+
+    Py_ssize_t position = -1;
+    npy_bool *p;
+    npy_bool *p_end;
+
+    if (forward) {
+        p = array_buffer;
+        p_end = p + size;
+
+        while (p < p_end - size_div.rem) {
+            if (*(npy_uint64*)p != 0) {
+                break;
+            } // found a true
+            p += sizeof(npy_uint64);
+        }
+        while (p < p_end) {
+            if (*p) {break;}
+            p++;
+        }
+    }
+    else {
+        p = array_buffer + size - 1;
+        p_end = array_buffer - 1;
+        while (p > p_end + size_div.rem) {
+            if (*(npy_uint64*)(p - MEMCMP_SIZE + 1) != 0) {
+                break;
+            }
+            p -= sizeof(npy_uint64);
+        }
+        while (p > p_end) {
+            if (*p) {break;}
+            p--;
+        }
+    }
+    if (p != p_end) {
+        position = p - array_buffer;
+    }
+    NPY_END_THREADS;
+
+    return PyLong_FromSsize_t(position);
+}
+
+
+//------------------------------------------------------------------------------
+
 static char *first_true_2d_kwarg_names[] = {
     "array",
     "forward",
@@ -813,6 +893,7 @@ static PyMethodDef npb_methods[] =  {
     {"first_true_1d_ptr", (PyCFunction)first_true_1d_ptr, METH_VARARGS, NULL},
     {"first_true_1d_ptr_unroll", (PyCFunction)first_true_1d_ptr_unroll, METH_VARARGS, NULL},
     {"first_true_1d_memcmp", (PyCFunction)first_true_1d_memcmp, METH_VARARGS, NULL},
+    {"first_true_1d_intcmp", (PyCFunction)first_true_1d_intcmp, METH_VARARGS, NULL},
     {"first_true_2d_unroll",
             (PyCFunction)first_true_2d_unroll,
             METH_VARARGS | METH_KEYWORDS,
