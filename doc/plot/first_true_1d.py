@@ -263,7 +263,7 @@ if __name__ == '__main__':
         ('ft1d-fig-8.png',
                 'first_true_1d() Performance with PyArray_DATA() and Forward Scan()',
                 (AKFirstTruePtr, AKFirstTruePtrUnroll, AKFirstTrueUintcmp, NPNonZero, NPNotAnyArgMax)),
-        # ('ft1d-fig-9.png',
+        ('ft1d-fig-9.png',
                 'first_true_1d() Performance (Log scale)',
                 (AKFirstTrueGetitem,
                 #  AKFirstTrueScalar,
