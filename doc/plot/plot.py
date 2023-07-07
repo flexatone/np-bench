@@ -128,6 +128,7 @@ def plot_performance(frame, *,
             )
 
     fig.set_size_inches(6, 3.5) # width, height
+    fig.set_facecolor('#d5d0ce')
 
     fig.legend(x_bar, x_labels, loc='center right', fontsize=4)
     # fig.legend(post, names_display, loc='center right', fontsize=8)

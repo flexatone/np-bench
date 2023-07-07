@@ -237,7 +237,7 @@ if __name__ == '__main__':
 
     for fn, title, processors in (
         ('ft1d-fig-0.png',
-                'np.nonzero(), np.argmax() Performance',
+                'np.argmax() + np.any() & np.nonzero() Performance',
                 (NPNonZero, NPNotAnyArgMax)),
         ('ft1d-fig-1.png',
                 'first_true_1d() Performance with PyArray_GETITEM()',
@@ -258,10 +258,10 @@ if __name__ == '__main__':
                 'first_true_1d() Performance with PyArray_DATA()',
                 (AKFirstTrueGetptr, AKFirstTruePtr, NPNonZero, NPNotAnyArgMax)),
         ('ft1d-fig-7.png',
-                'first_true_1d() Performance with PyArray_DATA() with Loop Unrolling',
+                'first_true_1d() Performance with PyArray_DATA() and Loop Unrolling',
                 (AKFirstTrueGetptr, AKFirstTruePtr, AKFirstTruePtrUnroll, NPNonZero, NPNotAnyArgMax)),
         ('ft1d-fig-8.png',
-                'first_true_1d() Performance with PyArray_DATA() and Forward Scan()',
+                'first_true_1d() Performance with PyArray_DATA() and Forward Scan',
                 (AKFirstTruePtr, AKFirstTruePtrUnroll, AKFirstTrueUintcmp, NPNonZero, NPNotAnyArgMax)),
         ('ft1d-fig-9.png',
                 'first_true_1d() Performance (Log scale)',
@@ -283,7 +283,7 @@ if __name__ == '__main__':
                 processors=processors,
                 fp=directory / fn,
                 title=title,
-                number=1000,
+                number=2,
                 )
 
 

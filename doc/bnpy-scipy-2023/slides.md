@@ -258,7 +258,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #d5d0ce;}
 </style>
 
 
@@ -290,7 +290,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #d5d0ce;}
 </style>
 
 
@@ -563,7 +563,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #d5d0ce;}
 </style>
 
 
@@ -665,7 +665,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #d5d0ce;}
 </style>
 
 
@@ -677,7 +677,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #d5d0ce;}
 </style>
 
 
@@ -810,7 +810,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #d5d0ce;}
 </style>
 
 
@@ -928,7 +928,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #d5d0ce;}
 </style>
 
 
@@ -1185,7 +1185,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #d5d0ce;}
 </style>
 
 
@@ -1329,7 +1329,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #d5d0ce;}
 </style>
 
 
@@ -1348,7 +1348,7 @@ layout: none
 </div>
 
 <style>
-div {background-color: #fff;}
+div {background-color: #d5d0ce;}
 </style>
 
 
