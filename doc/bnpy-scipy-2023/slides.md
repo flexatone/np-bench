@@ -61,7 +61,6 @@ layout: center
     - Must manage reference counts
 - C-extensions using C-types are fast
 - With NumPy, we get C-typed arrays in Python
-- NumPy is fast
 </v-clicks>
 </Transform>
 
@@ -73,16 +72,33 @@ layout: center
 <Transform :scale="1.5">
 <v-clicks>
 
-Some NumPy routines are implemented in Python
+1. Some NumPy routines are implemented in Python
+2. Many NumPy routines do more than we need
 
-Many NumPy routines do more than we need
+</v-clicks>
+</Transform>
+
+---
+---
+# Optimizing NumPy Routines written in Python
+
+<Transform :scale="1.5">
+<v-clicks depth="2">
+
+- Some NumPy routines are implemented in Python
+    - `np.roll()`
+    - `np.linspace()`
+- All leverage lower-level C routines
+- Little chance a C-implementation will be faster
+
 </v-clicks>
 </Transform>
 
 
+
 ---
 ---
-# Can NumPy Routines be Optimized?
+# Optimizing Excessively Flexible NumPy Routines
 
 <Transform :scale="1.5">
 <v-clicks depth="2">
@@ -184,7 +200,7 @@ If there are ties, the first index is returned
 
 Specialized for Boolean arrays to short-circuit on first `True`
 
-Returns `0` if all `False`
+All `False` returns an ambigous `0`
 
 Must call `np.any()` to discover all `False`
 </v-clicks>
@@ -247,7 +263,7 @@ Cannot short-circuit
 ---
 layout: center
 ---
-# Performance of `np.argmax()` (with `np.any()`) and `np.nonzero()`
+# Performance of `np.argmax()` + `np.any()` & `np.nonzero()`
 
 
 ---
@@ -301,11 +317,11 @@ div {background-color: #d5d0ce;}
 <Transform :scale="1.5">
 <v-clicks depth="2">
 
-- `np.argmax`
+- `np.argmax()`
     - Must call `np.any()` to discover all-`False`
     - Worst case requires two iterations, but can short-circuit
     - Does not search in reverse
-- `np.nonzero`
+- `np.nonzero()`
     - Requires one full iteration (cannot short-circuit)
     - Collects more than we need
     - Must iterate over results to find first or last
@@ -451,7 +467,7 @@ layout: center
 
 ---
 ---
-# Reading Elements from an Array in C
+# Four Ways to Read Elements
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -1197,7 +1213,7 @@ div {background-color: #d5d0ce;}
 <v-clicks depth="2">
 
 - SIMD used to look ahead for `True`
-- Use `memcmp()` compare raw memory to zero array buffer
+- Use `memcmp()` compare raw memory to a zero array buffer
 - Can cast 8 bytes of memory to `npy_uint64` and compare to `0`
 
 </v-clicks>
@@ -1227,7 +1243,7 @@ Less code than loop unrolling
 # IV(c.): Using C-Arrays, Forward Scan
 <Transform :scale="1.1">
 
-```c {all|1|2-4,19|5|6-9|10-13|14-17|18}
+```c {all|1-3,18|4|5-8|9-12|13-16|17}
 static PyObject*
 first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
 {
@@ -1353,6 +1369,13 @@ div {background-color: #d5d0ce;}
 
 
 ---
+layout: center
+---
+# Out-performing NumPy is hard!
+
+
+
+---
 ---
 # Reflections
 
@@ -1364,7 +1387,7 @@ div {background-color: #d5d0ce;}
     - Only support dimensionality needed
     - Specialized 1D and 2D are most practical
     - Only support needed dtypes
-    - Require contiguity when appropriate
+    - Require contiguity when possible
 - Constantly test performance
 </v-clicks>
 </Transform>
