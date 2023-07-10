@@ -104,10 +104,10 @@ layout: center
 <v-clicks depth="2">
 
 - NumPy routines are flexible
+    - Handle non-array (i.e., list, tuple) inputs
     - Handle N-dimensional arrays
     - Handle full diversity of dtypes
     - Support diverse array memory layouts (non-contiguous memory)
-    - Handle non-array (i.e., list, tuple) inputs
 - Flexibility has a performance cost
 - More narrow routines might be more efficient
 
@@ -285,8 +285,8 @@ div {background-color: #d5d0ce;}
 <Transform :scale="1.5">
 <v-clicks depth="2">
 
-- Rows are Boolean array size (1e5, 1e6, 1e7)
-- Four columns show different fill characteristics
+- Three rows: size of array (1e5, 1e6, 1e7)
+- Four columns: different fill characteristics
     - One `True`
         - Set at 1/3<sup>rd</sup> to the end
         - Set at 2/3<sup>rd</sup> to the end
@@ -341,7 +341,7 @@ Return -1 when all `False`
 <Transform :scale="1.5">
 <v-clicks>
 
-C extensions
+C implementation
 
 Cython / Numba
 
@@ -355,7 +355,7 @@ I will favor writing C-Extensions using the CPython C-API and NumPy C-API
 
 ---
 ---
-# Good Candidates for C-Implementation
+# Good Candidates for C Implementation
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -587,7 +587,7 @@ div {background-color: #d5d0ce;}
 ---
 layout: center
 ---
-# Use C types instead of `PyObject`s
+# Using C types instead of `PyObject`s
 
 
 ---
@@ -1052,7 +1052,7 @@ if ((npy_int64)m != ((1LL << vstep) - 1)) { // if not all zero
 
 - SIMD is hard in C
 - SIMD reduces loop iteration
-- Use loop unrolling
+- Loop unrolling
     - Reduce `for`-loop iterations
     - Increase branch prediction
 
@@ -1212,9 +1212,10 @@ div {background-color: #d5d0ce;}
 <Transform :scale="1.5">
 <v-clicks depth="2">
 
-- SIMD used to look ahead for `True`
-- Use `memcmp()` compare raw memory to a zero array buffer
+- SIMD looks ahead for `True`
+- Can use `memcmp()` to compare raw memory to a zero array buffer
 - Can cast 8 bytes of memory to `npy_uint64` and compare to `0`
+- Efficiently scans 8 1-byte Booleans
 
 </v-clicks>
 </Transform>
@@ -1231,7 +1232,7 @@ Only process 1D, Boolean, contiguous arrays
 
 Use `PyArray_DATA()` to get C-array
 
-Forward scanning in units of 8 bytes
+Forward scanning of 8 1-byte Booleans
 
 Less code than loop unrolling
 </v-clicks>
@@ -1352,7 +1353,7 @@ div {background-color: #d5d0ce;}
 ---
 layout: center
 ---
-# The big picture
+# The big (logarithmic) picture
 
 
 
@@ -1384,10 +1385,9 @@ layout: center
 
 - Recognize when the work can be done with C-types
 - Implement limited functions
-    - Only support dimensionality needed
-    - Specialized 1D and 2D are most practical
+    - Only support needed dimensionality
     - Only support needed dtypes
-    - Require contiguity when possible
+    - Require contiguity
 - Constantly test performance
 </v-clicks>
 </Transform>
