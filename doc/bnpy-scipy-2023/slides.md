@@ -396,7 +396,7 @@ layout: center
 # A Minimal C Extension Module `np_bench`
 <Transform :scale="1.1">
 
-```c {all|1|2-6|7-9,18|10|11-17}
+```c {all|1|2-6|7-9,18|10|11|12-17}
 // ... include Python.h, numpy, etc.
 static struct PyModuleDef npb_module = {
     .m_base = PyModuleDef_HEAD_INIT,
@@ -812,7 +812,7 @@ first_true_1d_npyiter(PyObject *Py_UNUSED(m), PyObject *args)
             data_ptr += stride;
         }
     } while(iter_next(iter));
-    if (i == PyArray_SIZE(array)) {
+    if (i == PyArray_SIZE(array)) { // did not exit
         i = -1;
     }
 exit:
@@ -1171,7 +1171,7 @@ Less code than loop unrolling
         p = array_buffer;
         p_end = p + size;
         while (p < p_end - size_div.rem) {
-            if (*(npy_uint64*)p != 0) {
+            if (*(npy_uint64*)p != 0) { // a True is found
                 break;
             }
             p += lookahead;
