@@ -1215,7 +1215,7 @@ div {background-color: #d5d0ce;}
 - SIMD looks ahead for `True`
 - Can use `memcmp()` to compare raw memory to a zero array buffer
 - Can cast 8 bytes of memory to `npy_uint64` and compare to `0`
-- Efficiently scans 8 1-byte Booleans
+- Efficiently forward scans 8 1-byte Booleans
 
 </v-clicks>
 </Transform>
