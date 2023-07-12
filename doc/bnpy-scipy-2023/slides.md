@@ -212,13 +212,13 @@ Must call `np.any()` to discover all `False`
 # `np.argmax()`
 <Transform :scale="1.5">
 
-```python {all|1|1-3|4-5|6-7}
->>> array = np.arange(10_000) == 2_000
+```python {all|1|1-3|4-5|4-7}
+>>> array = np.array([False, False, True, False, False])
 >>> np.argmax(array) # finds first True
-2000
->>> np.argmax(np.full(10_000, False)) # if all False, reports 0
+2
+>>> np.argmax(np.array([False, False])) # if all False, reports 0
 0
->>> np.argmax(np.array([True, False])) # if True at index 0
+>>> np.argmax(np.array([True, False]))
 0
 ```
 </Transform>
@@ -245,17 +245,15 @@ Cannot short-circuit
 # `np.nonzero()`
 <Transform :scale="1.5">
 
-```python {all|1|1-3|1-5|6|6-8|6-10} {lines:false}
->>> array = np.arange(10_000) == 2_000
+```python {all|1|1-3|1-5|6|6-8} {lines:false}
+>>> array = np.array([False, False, True, False, False])
 >>> np.nonzero(array)
-(array([2000]),)
+(array([2]),)
 >>> np.nonzero(array)[0][0]
-2000
->>> array = np.arange(10_000) % 2_000 == 0
->>> array.sum()
-5
+2
+>>> array = np.array([False, True, False, True, True])
 >>> np.nonzero(array)
-(array([   0, 2000, 4000, 6000, 8000]),)
+(array([1, 3, 4]),)
 ```
 </Transform>
 
@@ -285,7 +283,7 @@ div {background-color: #d5d0ce;}
 <Transform :scale="1.5">
 <v-clicks depth="2">
 
-- Three rows: size of array (1e5, 1e6, 1e7)
+- Three rows: size of 1D array (1e5, 1e6, 1e7)
 - Four columns: different fill characteristics
     - One `True`
         - Set at 1/3<sup>rd</sup> to the end
@@ -346,6 +344,8 @@ C implementation
 Cython / Numba
 
 Rust via PyO3
+
+GPU
 </v-clicks>
 </Transform>
 <!--
@@ -473,7 +473,7 @@ layout: center
 <Transform :scale="1.5">
 <v-clicks>
 
-1. Reading Native `PyObject`s From Arrays (``PyArray_GETITEM``)
+1. Reading `PyObject`s From Arrays (``PyArray_GETITEM``)
 1. Casting Data Pointers to C-Types (``PyArray_GETPTR1``)
 1. Using `NpyIter`
 1. Using C-Arrays and Pointer Arithmetic (``PyArray_DATA()``)
@@ -489,7 +489,7 @@ layout: center
 
 ---
 ---
-# I: Reading Native `PyObject`s From Arrays
+# I: Reading `PyObject`s From Arrays
 
 <Transform :scale="1.5">
 <v-clicks>
@@ -509,7 +509,7 @@ Must manage reference counts for `PyObject`s
 
 ---
 ---
-# I: Reading Native `PyObject`s From Arrays
+# I: Reading `PyObject`s From Arrays
 <Transform :scale="1.1">
 
 ```c {all|1-3,10|4|5-8|9}
@@ -529,7 +529,7 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# I: Reading Native `PyObject`s From Arrays
+# I: Reading `PyObject`s From Arrays
 <Transform :scale="1.1">
 
 ```c {all|1-3|4,13|5,12|6|7-11}
@@ -551,7 +551,7 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
 
 ---
 ---
-# I: Reading Native `PyObject`s From Arrays
+# I: Reading `PyObject`s From Arrays
 <Transform :scale="1.1">
 
 ```c {all|1,10|2,9|3|4-8|11-14}
@@ -953,7 +953,7 @@ div {background-color: #d5d0ce;}
 ---
 layout: center
 ---
-# How is ``np.argmax()`` still faster?
+# How is ``np.argmax()`` + ``np.any()`` still faster?
 
 
 ---
@@ -1072,6 +1072,10 @@ Only process 1D, Boolean, contiguous arrays
 Use `PyArray_DATA()` to get C-array
 
 Advance through array with pointer arithmetic, unrolling units of 4
+
+Use ``lldiv`` to get quotient and remainder
+
+Use element-wise looping for remainder
 </v-clicks>
 </Transform>
 
@@ -1097,9 +1101,11 @@ div {background-color: #d5d0ce;}
 <v-clicks depth="2">
 
 - SIMD looks ahead for `True`
-- Can use `memcmp()` to compare raw memory to a zero array buffer
-- Can cast 8 bytes of memory to `npy_uint64` and compare to `0`
+- Two look-ahead options
+    - Use `memcmp()` to compare raw memory to a zero array buffer
+    - Cast 8 bytes of memory to `npy_uint64` and compare to `0`
 - Efficiently forward scans 8 1-byte Booleans
+- Upon discovery of `True`, do element-wise iteration
 
 </v-clicks>
 </Transform>
@@ -1116,110 +1122,12 @@ Only process 1D, Boolean, contiguous arrays
 
 Use `PyArray_DATA()` to get C-array
 
-Forward scanning of 8 1-byte Booleans
+Forward scanning of 8 1-byte Booleans by casting to `npy_uint64`
 
 Less code than loop unrolling
 </v-clicks>
 </Transform>
 
-
----
----
-# IV(c.): Using C-Arrays, Forward Scan
-<Transform :scale="1.1">
-
-```c {all|1-3,18|4|5-8|9-12|13-16|17}
-static PyObject*
-first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
-{
-    // ... parse args
-    if (PyArray_NDIM(array) != 1) {
-        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
-        return NULL;
-    }
-    if (PyArray_TYPE(array) != NPY_BOOL) {
-        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
-        return NULL;
-    }
-    if (!PyArray_IS_C_CONTIGUOUS(array)) {
-        PyErr_SetString(PyExc_ValueError, "Array must be contiguous");
-        return NULL;
-    }
-    // ... implementation
-}
-```
-</Transform>
-
-
-
----
----
-# IV(c.): Using C-Arrays, Forward Scan
-<Transform :scale="1.1">
-
-```c {all|1|2|4-5|7-9}
-    npy_intp lookahead = sizeof(npy_uint64);
-    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
-
-    npy_intp size = PyArray_SIZE(array);
-    lldiv_t size_div = lldiv((long long)size, lookahead); // quot, rem
-
-    Py_ssize_t position = -1;
-    npy_bool *p;
-    npy_bool *p_end;
-```
-</Transform>
-
-
----
----
-# IV(c.): Using C-Arrays, Forward Scan
-<Transform :scale="1.1">
-
-```c {all|1,14|2-3|4,9|5-8|10-13}
-    if (forward) {
-        p = array_buffer;
-        p_end = p + size;
-        while (p < p_end - size_div.rem) {
-            if (*(npy_uint64*)p != 0) {
-                break;
-            }
-            p += lookahead;
-        }
-        while (p < p_end) {
-            if (*p) {break;}
-            p++;
-        }
-    }
-```
-</Transform>
-
----
----
-# IV(c.): Using C-Arrays, Forward Scan
-<Transform :scale="1.1">
-
-```c {all|1,14|2-3|4,9|5-8|10-13|15-18}
-    else { // reverse
-        p = array_buffer + size - 1;
-        p_end = array_buffer - 1;
-        while (p > p_end + size_div.rem) {
-            if (*(npy_uint64*)(p - lookahead + 1) != 0) {
-                break;
-            }
-            p -= lookahead;
-        }
-        while (p > p_end) {
-            if (*p) {break;}
-            p--;
-        }
-    }
-    if (p != p_end) {
-        position = p - array_buffer;
-    }
-    return PyLong_FromSsize_t(position);
-```
-</Transform>
 
 
 ---

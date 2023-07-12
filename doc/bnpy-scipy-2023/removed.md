@@ -334,3 +334,106 @@ first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
     return PyLong_FromSsize_t(i);
 ```
 </Transform>
+
+
+
+
+
+
+---
+---
+# IV(c.): Using C-Arrays, Forward Scan
+<Transform :scale="1.1">
+
+```c {all|1-3,18|4|5-8|9-12|13-16|17}
+static PyObject*
+first_true_1d_memcmp(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    // ... parse args
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+    if (!PyArray_IS_C_CONTIGUOUS(array)) {
+        PyErr_SetString(PyExc_ValueError, "Array must be contiguous");
+        return NULL;
+    }
+    // ... implementation
+}
+```
+</Transform>
+
+
+
+---
+---
+# IV(c.): Using C-Arrays, Forward Scan
+<Transform :scale="1.1">
+
+```c {all|1|2|4-5|7-9}
+    npy_intp lookahead = sizeof(npy_uint64);
+    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
+
+    npy_intp size = PyArray_SIZE(array);
+    lldiv_t size_div = lldiv((long long)size, lookahead); // quot, rem
+
+    Py_ssize_t position = -1;
+    npy_bool *p;
+    npy_bool *p_end;
+```
+</Transform>
+
+
+---
+---
+# IV(c.): Using C-Arrays, Forward Scan
+<Transform :scale="1.1">
+
+```c {all|1,14|2-3|4,9|5-8|10-13}
+    if (forward) {
+        p = array_buffer;
+        p_end = p + size;
+        while (p < p_end - size_div.rem) {
+            if (*(npy_uint64*)p != 0) {
+                break;
+            }
+            p += lookahead;
+        }
+        while (p < p_end) {
+            if (*p) {break;}
+            p++;
+        }
+    }
+```
+</Transform>
+
+---
+---
+# IV(c.): Using C-Arrays, Forward Scan
+<Transform :scale="1.1">
+
+```c {all|1,14|2-3|4,9|5-8|10-13|15-18}
+    else { // reverse
+        p = array_buffer + size - 1;
+        p_end = array_buffer - 1;
+        while (p > p_end + size_div.rem) {
+            if (*(npy_uint64*)(p - lookahead + 1) != 0) {
+                break;
+            }
+            p -= lookahead;
+        }
+        while (p > p_end) {
+            if (*p) {break;}
+            p--;
+        }
+    }
+    if (p != p_end) {
+        position = p - array_buffer;
+    }
+    return PyLong_FromSsize_t(position);
+```
+</Transform>
