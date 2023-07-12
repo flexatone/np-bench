@@ -216,3 +216,121 @@ div {background-color: #fff;}
 
 
 
+
+
+
+---
+---
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+<Transform :scale="1.0">
+
+```c {all|1-3,18|4|5-8|9-12|13-16|17}
+static PyObject*
+first_true_1d_ptr_unroll(PyObject *Py_UNUSED(m), PyObject *args)
+{
+    // ... parse args
+    if (PyArray_NDIM(array) != 1) {
+        PyErr_SetString(PyExc_ValueError, "Array must be 1-dimensional");
+        return NULL;
+    }
+    if (PyArray_TYPE(array) != NPY_BOOL) {
+        PyErr_SetString(PyExc_ValueError, "Array must be of type bool");
+        return NULL;
+    }
+    if (!PyArray_IS_C_CONTIGUOUS(array)) {
+        PyErr_SetString(PyExc_ValueError, "Array must be contiguous");
+        return NULL;
+    }
+    // ... implementation
+}
+```
+</Transform>
+
+
+---
+---
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+<Transform :scale="1.1">
+
+```c {all|1|3-4|6-9}
+    npy_bool *array_buffer = (npy_bool*)PyArray_DATA(array);
+
+    npy_intp size = PyArray_SIZE(array);
+    lldiv_t size_div = lldiIv((long long)size, 4); // unroll 4 iterations
+
+    Py_ssize_t i = -1;
+    npy_bool *p;
+    npy_bool *p_end;
+```
+</Transform>
+
+
+
+---
+---
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+<Transform :scale="1.0">
+
+```c {all|1,18|2-3|4,13|5-12|14,17|15-16}
+    if (forward) {
+        p = array_buffer;
+        p_end = p + size;
+        while (p < p_end - size_div.rem) {
+            if (*p) {break;}
+            p++;
+            if (*p) {break;}
+            p++;
+            if (*p) {break;}
+            p++;
+            if (*p) {break;}
+            p++;
+        }
+        while (p < p_end) {
+            if (*p) {break;}
+            p++;
+        }
+    }
+```
+</Transform>
+
+
+---
+---
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+<Transform :scale="1.0">
+
+```c {all|1,18|2-3|4,13|5-12|14,17|15-16}
+    else { // reverse
+        p = array_buffer + size - 1;
+        p_end = array_buffer - 1;
+        while (p > p_end + size_div.rem) {
+            if (*p) {break;}
+            p--;
+            if (*p) {break;}
+            p--;
+            if (*p) {break;}
+            p--;
+            if (*p) {break;}
+            p--;
+        }
+        while (p > p_end) {
+            if (*p) {break;}
+            p--;
+        }
+    }
+```
+</Transform>
+
+
+---
+---
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+<Transform :scale="1.1">
+
+```c {all}
+    if (p != p_end) {
+        i = p - array_buffer;
+    }
+    return PyLong_FromSsize_t(i);
+```
+</Transform>
