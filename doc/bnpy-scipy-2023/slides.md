@@ -473,10 +473,13 @@ layout: center
 <Transform :scale="1.5">
 <v-clicks>
 
-1. Reading `PyObject`s From Arrays (``PyArray_GETITEM``)
-1. Casting Data Pointers to C-Types (``PyArray_GETPTR1``)
-1. Using `NpyIter`
-1. Using C-Arrays and Pointer Arithmetic (``PyArray_DATA()``)
+I. Reading `PyObject`s From Arrays (``PyArray_GETITEM``)
+
+II. Casting Data Pointers to C-Types (``PyArray_GETPTR1``)
+
+III. Using `NpyIter`
+
+IV. Using C-Arrays and Pointer Arithmetic (``PyArray_DATA()``)
 </v-clicks>
 </Transform>
 
@@ -1080,6 +1083,33 @@ Use element-wise looping for remainder
 </Transform>
 
 
+---
+---
+# IV(b.): Using C-Arrays, Pointer Arithmetic, Loop Unrolling
+<Transform :scale="1.0">
+
+```c {all|1,18|2-3|4,13|5-12|14,17|15-16}
+    if (forward) {
+        p = array_buffer;
+        p_end = p + size;
+        while (p < p_end - size_div.rem) {
+            if (*p) {break;}
+            p++;
+            if (*p) {break;}
+            p++;
+            if (*p) {break;}
+            p++;
+            if (*p) {break;}
+            p++;
+        }
+        while (p < p_end) {
+            if (*p) {break;}
+            p++;
+        }
+    }
+```
+</Transform>
+
 
 ---
 layout: none
@@ -1124,10 +1154,35 @@ Use `PyArray_DATA()` to get C-array
 
 Forward scanning of 8 1-byte Booleans by casting to `npy_uint64`
 
+Jump by `lookahead`, i.e., `sizeof(npy_uint64)`
+
 Less code than loop unrolling
 </v-clicks>
 </Transform>
 
+
+---
+---
+# IV(c.): Using C-Arrays, Forward Scan
+<Transform :scale="1.1">
+
+```c {all|1,14|2-3|4,9|5-8|10-13}
+    if (forward) {
+        p = array_buffer;
+        p_end = p + size;
+        while (p < p_end - size_div.rem) {
+            if (*(npy_uint64*)p != 0) {
+                break;
+            }
+            p += lookahead;
+        }
+        while (p < p_end) {
+            if (*p) {break;}
+            p++;
+        }
+    }
+```
+</Transform>
 
 
 ---
