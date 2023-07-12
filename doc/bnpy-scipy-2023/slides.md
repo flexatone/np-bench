@@ -568,7 +568,7 @@ first_true_1d_getitem(PyObject *Py_UNUSED(m), PyObject *args)
             Py_DECREF(element);
         }
     }
-    if (i < 0 || i >= size ) {
+    if (i < 0 || i >= size ) { // did not break
         i = -1;
     }
     return PyLong_FromSsize_t(i);
@@ -669,7 +669,7 @@ first_true_1d_getptr(PyObject *Py_UNUSED(m), PyObject *args)
             }
         }
     }
-    if (i < 0 || i >= size ) {
+    if (i < 0 || i >= size ) { // did not break
         i = -1;
     }
     return PyLong_FromSsize_t(i);
@@ -926,7 +926,7 @@ first_true_1d_ptr(PyObject *Py_UNUSED(m), PyObject *args)
             p--;
         }
     }
-    if (p != p_end) {
+    if (p != p_end) { // if break encountered
         i = p - array_buffer;
     }
     return PyLong_FromSsize_t(i);
@@ -1005,11 +1005,11 @@ NPY_NO_EXPORT int NPY_CPU_DISPATCH_CURFX(BOOL_argmax)
         npyv_b8 m_ab = npyv_and_b8(m_a, m_b);
         npyv_b8 m_cd = npyv_and_b8(m_c, m_d);
         npy_uint64 m = npyv_tobits_b8(npyv_and_b8(m_ab, m_cd));
-        if ((npy_int64)m != ((1LL << vstep) - 1)) { // if not all zero
+        if ((npy_int64)m != ((1LL << vstep) - 1)) { // a non-zero found
             break;
         }
     }
-    // ... element-wise evaluate from current i to the end
+    // ... element-wise evaluation from current i to the end
 }
 ```
 </Transform>
@@ -1039,7 +1039,7 @@ npyv_b8 m_d = npyv_cmpeq_u8(d, zero);
 npyv_b8 m_ab = npyv_and_b8(m_a, m_b);
 npyv_b8 m_cd = npyv_and_b8(m_c, m_d);
 npy_uint64 m = npyv_tobits_b8(npyv_and_b8(m_ab, m_cd));
-if ((npy_int64)m != ((1LL << vstep) - 1)) { // if not all zero
+if ((npy_int64)m != ((1LL << vstep) - 1)) { // a non-zero found
     break;
 }
 ```
@@ -1057,7 +1057,7 @@ if ((npy_int64)m != ((1LL << vstep) - 1)) { // if not all zero
 - SIMD reduces loop iteration
 - Loop unrolling
     - Reduce `for`-loop iterations
-    - Increase branch prediction
+    - May optimizes CPU branch prediction
 
 </v-clicks>
 </Transform>
@@ -1166,7 +1166,7 @@ Less code than loop unrolling
 # IV(c.): Using C-Arrays, Forward Scan
 <Transform :scale="1.1">
 
-```c {all|1,14|2-3|4,9|5-8|10-13}
+```c {all|1,16|2-3|4,9|5-8|10-15}
     if (forward) {
         p = array_buffer;
         p_end = p + size;
@@ -1177,7 +1177,9 @@ Less code than loop unrolling
             p += lookahead;
         }
         while (p < p_end) {
-            if (*p) {break;}
+            if (*p) {
+                break;
+            }
             p++;
         }
     }
